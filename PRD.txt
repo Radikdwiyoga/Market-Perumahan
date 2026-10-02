@@ -1,0 +1,2581 @@
+# PRD — Marketplace Perumahan
+
+**Versi:** 1.0
+**Tanggal:** 23 September 2026
+**Status:** Draft / Ready for Development
+
+---
+
+# 1. Ringkasan Produk
+
+## 1.1 Nama Produk
+
+**Marketplace Perumahan**
+
+Platform marketplace khusus lingkungan perumahan yang memungkinkan warga membeli dan menjual produk/jasa dari pedagang yang berada di dalam atau sekitar lingkungan perumahan.
+
+Platform memiliki tiga role utama:
+
+1. **Pembeli**
+2. **Pedagang / Penjual**
+3. **Pengelola / Admin**
+
+Marketplace mendukung:
+
+* Produk dari banyak pedagang.
+* Keranjang belanja.
+* Checkout.
+* Pembayaran Transfer Bank.
+* Pembayaran COD.
+* Pembayaran QRIS.
+* Pedagang dapat mengupload QRIS satu kali.
+* QRIS yang telah diupload otomatis digunakan setiap kali pembeli memilih pembayaran QRIS.
+* Pengiriman oleh penjual.
+* Pengambilan langsung di toko/pedagang.
+* Tracking status pesanan.
+* Dashboard masing-masing role.
+* Pengelolaan pengguna, pedagang, produk, transaksi, dan laporan.
+
+---
+
+# 2. Tujuan Produk
+
+Marketplace dibuat untuk menjadi pusat transaksi ekonomi di lingkungan perumahan.
+
+### Tujuan utama
+
+* Memudahkan warga membeli kebutuhan dari pedagang sekitar.
+* Membantu pedagang lokal mendapatkan pelanggan.
+* Mempermudah pengelola memonitor aktivitas marketplace.
+* Menyediakan sistem pembayaran yang fleksibel.
+* Mendukung transaksi online dan offline.
+* Menyediakan sistem order dan status transaksi yang jelas.
+* Mengurangi kebutuhan komunikasi manual melalui WhatsApp untuk transaksi sederhana.
+
+---
+
+# 3. Target User
+
+## 3.1 Pembeli
+
+Warga yang ingin membeli produk dari pedagang di lingkungan perumahan.
+
+Contoh:
+
+* Membeli makanan.
+* Membeli sembako.
+* Membeli kebutuhan rumah tangga.
+* Membeli produk UMKM.
+* Membeli jasa.
+
+---
+
+## 3.2 Pedagang
+
+Warga atau pelaku usaha yang menjual produk melalui marketplace.
+
+Pedagang dapat:
+
+* Membuat toko.
+* Menambahkan produk.
+* Mengatur harga.
+* Mengatur stok.
+* Mengatur QRIS.
+* Menerima order.
+* Memproses order.
+* Mengatur pengiriman.
+* Melihat laporan penjualan.
+
+---
+
+## 3.3 Pengelola
+
+Pengelola perumahan / admin marketplace.
+
+Pengelola dapat:
+
+* Mengelola pengguna.
+* Memverifikasi pedagang.
+* Mengelola kategori.
+* Memantau transaksi.
+* Mengelola komisi jika digunakan.
+* Melihat laporan.
+* Menonaktifkan toko atau akun.
+* Menangani laporan/komplain.
+
+---
+
+# 4. Role & Permission
+
+| Fitur                      | Pembeli | Pedagang | Pengelola |
+| -------------------------- | ------: | -------: | --------: |
+| Registrasi                 |       ✓ |        ✓ |         - |
+| Login                      |       ✓ |        ✓ |         ✓ |
+| Melihat produk             |       ✓ |        ✓ |         ✓ |
+| Mencari produk             |       ✓ |        ✓ |         ✓ |
+| Membeli produk             |       ✓ |        - |         - |
+| Keranjang                  |       ✓ |        - |         - |
+| Checkout                   |       ✓ |        - |         - |
+| Melihat order sendiri      |       ✓ |        ✓ |         ✓ |
+| Membuat toko               |       - |        ✓ |         ✓ |
+| Mengelola produk           |       - |        ✓ |         ✓ |
+| Mengelola stok             |       - |        ✓ |         ✓ |
+| Upload QRIS                |       - |        ✓ |         ✓ |
+| Menerima order             |       - |        ✓ |         ✓ |
+| Memproses order            |       - |        ✓ |         ✓ |
+| Mengatur metode pengiriman |       - |        ✓ |         ✓ |
+| Melihat laporan penjualan  |       - |        ✓ |         ✓ |
+| Verifikasi pedagang        |       - |        - |         ✓ |
+| Kelola pengguna            |       - |        - |         ✓ |
+| Kelola kategori            |       - |        - |         ✓ |
+| Kelola transaksi           |       - |        - |         ✓ |
+| Kelola komplain            |       ✓ |        ✓ |         ✓ |
+| Dashboard                  |       ✓ |        ✓ |         ✓ |
+
+---
+
+# 5. Konsep Marketplace
+
+Marketplace menggunakan konsep **multi-vendor**.
+
+Satu marketplace dapat memiliki banyak toko.
+
+Contoh:
+
+```text
+Marketplace Perumahan
+│
+├── Toko Sembako Pak Budi
+│   ├── Beras
+│   ├── Minyak
+│   └── Gula
+│
+├── Warung Bu Siti
+│   ├── Nasi Goreng
+│   ├── Mie Goreng
+│   └── Es Teh
+│
+├── Toko Elektronik Andi
+│   ├── Kabel
+│   ├── Lampu
+│   └── Charger
+│
+└── Laundry Bersih
+    ├── Laundry Kiloan
+    └── Laundry Express
+```
+
+---
+
+# 6. Arsitektur Transaksi
+
+Sistem harus mendukung pembelian dari beberapa pedagang.
+
+Contoh:
+
+Pembeli memasukkan:
+
+```text
+Produk A
+Toko A
+
+Produk B
+Toko B
+```
+
+Saat checkout, sistem dapat membuat transaksi berdasarkan toko.
+
+```text
+ORDER #ORD-001
+│
+├── Sub Order #SUB-001
+│   └── Toko A
+│       ├── Produk A
+│       └── Produk B
+│
+└── Sub Order #SUB-002
+    └── Toko B
+        └── Produk C
+```
+
+Setiap sub-order memiliki:
+
+* Pedagang.
+* Produk.
+* Jumlah.
+* Harga.
+* Status.
+* Metode pengiriman.
+* Metode pembayaran.
+
+---
+
+# 7. Fitur Pembeli
+
+## 7.1 Registrasi
+
+Pembeli dapat melakukan registrasi menggunakan:
+
+* Nama lengkap.
+* Nomor HP.
+* Email (opsional).
+* Password.
+* Alamat rumah.
+* Blok / nomor rumah.
+
+Contoh:
+
+```text
+Nama       : Radik Dwiyoga
+No HP      : 08xxxxxxxxxx
+Blok       : A2
+Nomor      : 15
+Alamat     : Perumahan ABC
+```
+
+---
+
+# 8. Login
+
+Login menggunakan:
+
+* Nomor HP / email.
+* Password.
+
+Opsional untuk pengembangan berikutnya:
+
+* OTP.
+* Google Login.
+
+---
+
+# 9. Home Page
+
+Home page menampilkan:
+
+```text
+Marketplace Perumahan
+
+[ Search produk / toko ]
+
+Kategori
+--------------------------------
+Sembako | Makanan | Minuman
+Fashion | Elektronik | Jasa
+
+Produk Terbaru
+--------------------------------
+[Produk] [Produk] [Produk]
+
+Toko Terdekat
+--------------------------------
+[Toko] [Toko] [Toko]
+```
+
+---
+
+# 10. Pencarian
+
+Pembeli dapat mencari:
+
+* Nama produk.
+* Nama toko.
+* Kategori.
+* Keyword.
+
+Contoh:
+
+```text
+"beras"
+
+Hasil:
+
+Beras Premium 5 Kg
+Toko Sembako Pak Budi
+Rp 75.000
+```
+
+---
+
+# 11. Detail Produk
+
+Informasi produk:
+
+* Foto.
+* Nama.
+* Harga.
+* Deskripsi.
+* Stok.
+* Nama toko.
+* Lokasi toko.
+* Rating.
+* Estimasi pengiriman.
+* Opsi pengiriman.
+
+Contoh:
+
+```text
+Beras Premium 5 Kg
+
+Rp75.000
+
+Stok: 20
+
+Toko:
+Sembako Pak Budi
+
+Pengiriman:
+✓ Diantar Penjual
+✓ Ambil di Toko
+```
+
+---
+
+# 12. Keranjang
+
+Keranjang dikelompokkan berdasarkan pedagang.
+
+Contoh:
+
+```text
+KERANJANG
+
+Toko Pak Budi
+-------------------------
+☑ Beras 5 Kg      Rp75.000
+☑ Minyak 2 Liter  Rp35.000
+
+Subtotal: Rp110.000
+
+
+Warung Bu Siti
+-------------------------
+☑ Nasi Goreng     Rp20.000
+☑ Es Teh          Rp5.000
+
+Subtotal: Rp25.000
+```
+
+---
+
+# 13. Checkout
+
+Checkout harus menampilkan:
+
+### Informasi pembeli
+
+* Nama.
+* Nomor HP.
+* Alamat.
+
+### Produk
+
+* Produk.
+* Jumlah.
+* Harga.
+
+### Pengiriman
+
+* Diantar Penjual.
+* Ambil di Toko.
+
+### Pembayaran
+
+* Transfer Bank.
+* COD.
+* QRIS.
+
+---
+
+# 14. Metode Pembayaran
+
+Sistem menyediakan tiga metode pembayaran.
+
+```text
+1. Transfer Bank
+2. COD
+3. QRIS
+```
+
+---
+
+# 15. Transfer Bank
+
+Pembeli memilih:
+
+```text
+Metode Pembayaran
+
+○ Transfer Bank
+○ COD
+○ QRIS
+```
+
+Jika memilih Transfer Bank:
+
+```text
+Transfer Bank
+
+Bank:
+BCA
+
+Nomor Rekening:
+1234567890
+
+Atas Nama:
+Marketplace Perumahan
+
+Total:
+Rp150.000
+
+[ Upload Bukti Transfer ]
+```
+
+Pembeli wajib melakukan upload bukti transfer.
+
+Status pembayaran:
+
+```text
+MENUNGGU PEMBAYARAN
+MENUNGGU VERIFIKASI
+DIBAYAR
+DITOLAK
+```
+
+Pengelola/pedagang dapat melakukan verifikasi sesuai konfigurasi sistem.
+
+---
+
+# 16. COD
+
+Jika memilih COD:
+
+```text
+Metode:
+COD
+
+Total:
+Rp150.000
+
+Pembayaran dilakukan ketika:
+Produk diterima pembeli.
+```
+
+Status:
+
+```text
+COD DIPILIH
+DIPROSES
+DIKIRIM
+DITERIMA
+SELESAI
+```
+
+Untuk COD pickup:
+
+```text
+Pembeli mengambil barang
+di toko dan membayar kepada pedagang.
+```
+
+---
+
+# 17. QRIS
+
+QRIS memiliki mekanisme khusus.
+
+## 17.1 Upload QRIS Pedagang
+
+Setiap pedagang dapat mengupload QRIS miliknya.
+
+Pedagang hanya perlu melakukan upload **satu kali**.
+
+Menu:
+
+```text
+Pengaturan Toko
+    |
+    └── Pembayaran
+            |
+            └── QRIS
+```
+
+Contoh:
+
+```text
+QRIS Toko
+
+[ Upload QRIS ]
+
+Status:
+✓ QRIS sudah tersedia
+
+[ Ganti QRIS ]
+```
+
+File QRIS:
+
+```text
+qris_toko_001.png
+```
+
+Database menyimpan:
+
+```text
+seller_id
+qris_image
+qris_status
+uploaded_at
+updated_at
+```
+
+---
+
+# 18. Mekanisme QRIS Saat Checkout
+
+Ketika pembeli memilih:
+
+```text
+QRIS
+```
+
+sistem mengambil QRIS berdasarkan pedagang.
+
+Contoh:
+
+```text
+Checkout
+Toko: Sembako Pak Budi
+
+Pembayaran:
+QRIS
+
+Scan QRIS di bawah ini
+
+┌─────────────────┐
+│                 │
+│   QR CODE       │
+│                 │
+│    QRIS         │
+│                 │
+└─────────────────┘
+
+Total:
+Rp125.000
+
+[ Upload Bukti Pembayaran ]
+```
+
+QRIS yang ditampilkan adalah QRIS milik pedagang yang bersangkutan.
+
+---
+
+# 19. Multi-Vendor QRIS
+
+Jika satu checkout memiliki beberapa pedagang:
+
+```text
+Toko A
+Rp100.000
+QRIS A
+
+Toko B
+Rp75.000
+QRIS B
+```
+
+Sistem harus menampilkan QRIS berdasarkan sub-order.
+
+Contoh:
+
+```text
+Pembayaran Toko A
+
+QRIS Toko A
+[QR IMAGE]
+
+Total:
+Rp100.000
+
+[Upload Bukti]
+```
+
+Kemudian:
+
+```text
+Pembayaran Toko B
+
+QRIS Toko B
+[QR IMAGE]
+
+Total:
+Rp75.000
+
+[Upload Bukti]
+```
+
+Hal ini mencegah pembayaran masuk ke QRIS pedagang yang salah.
+
+---
+
+# 20. Validasi QRIS
+
+Pedagang tidak dapat memilih QRIS yang berbeda setiap transaksi.
+
+QRIS menggunakan konfigurasi toko:
+
+```text
+Seller
+  ↓
+Seller Payment Setting
+  ↓
+QRIS Image
+```
+
+Jika QRIS belum tersedia:
+
+```text
+QRIS belum tersedia untuk toko ini.
+
+Silakan pilih metode pembayaran lain.
+```
+
+---
+
+# 21. Upload Bukti Pembayaran
+
+Untuk Transfer Bank dan QRIS:
+
+```text
+Upload Bukti Pembayaran
+```
+
+Format:
+
+* JPG.
+* JPEG.
+* PNG.
+* Maksimal ukuran configurable, default 5 MB.
+
+Informasi:
+
+```text
+payment_id
+order_id
+payment_method
+proof_image
+uploaded_at
+status
+```
+
+---
+
+# 22. Metode Pengiriman
+
+Marketplace memiliki dua metode pengiriman utama:
+
+```text
+1. Diantar oleh Penjual
+2. Ambil Sendiri di Toko
+```
+
+---
+
+# 23. Diantar oleh Penjual
+
+Pedagang mengantarkan barang ke alamat pembeli.
+
+Checkout:
+
+```text
+Metode Pengiriman
+
+○ Diantar oleh Penjual
+○ Ambil di Toko
+```
+
+Jika dipilih:
+
+```text
+Alamat Pengiriman:
+
+Blok A2 No. 15
+Perumahan ABC
+
+Catatan:
+Rumah pagar hitam.
+```
+
+Pedagang kemudian mengubah status:
+
+```text
+MENUNGGU DIPROSES
+      ↓
+DIPROSES
+      ↓
+SIAP DIANTAR
+      ↓
+DALAM PENGANTARAN
+      ↓
+SELESAI
+```
+
+---
+
+# 24. Ambil Sendiri di Toko
+
+Pembeli dapat mengambil pesanan sendiri.
+
+Checkout:
+
+```text
+Metode Pengiriman
+
+○ Diantar oleh Penjual
+● Ambil di Toko
+```
+
+Sistem menampilkan:
+
+```text
+Lokasi Pengambilan
+
+Toko Sembako Pak Budi
+
+Blok A1 No. 10
+
+Jam Operasional:
+08.00 - 21.00
+```
+
+Status:
+
+```text
+MENUNGGU DIPROSES
+      ↓
+DIPROSES
+      ↓
+SIAP DIAMBIL
+      ↓
+DIAMBIL
+      ↓
+SELESAI
+```
+
+---
+
+# 25. Kode Pengambilan
+
+Untuk menghindari barang diambil orang lain, sistem dapat membuat:
+
+```text
+Pickup Code:
+482915
+```
+
+Pembeli menunjukkan kode tersebut kepada pedagang.
+
+Pedagang memasukkan kode:
+
+```text
+[ 4 ][ 8 ][ 2 ][ 9 ][ 1 ][ 5 ]
+
+[Konfirmasi Pengambilan]
+```
+
+Jika benar:
+
+```text
+Pesanan berhasil diambil.
+```
+
+---
+
+# 26. Status Order
+
+Status utama:
+
+```text
+PENDING_PAYMENT
+WAITING_PAYMENT_VERIFICATION
+PAID
+PROCESSING
+READY_FOR_PICKUP
+READY_FOR_DELIVERY
+OUT_FOR_DELIVERY
+COMPLETED
+CANCELLED
+REJECTED
+```
+
+---
+
+# 27. Alur Order Pembeli
+
+```text
+Cari Produk
+     ↓
+Pilih Produk
+     ↓
+Tambah Keranjang
+     ↓
+Checkout
+     ↓
+Pilih Pengiriman
+     ↓
+Pilih Pembayaran
+     ↓
+Buat Order
+     ↓
+Pembayaran
+     ↓
+Verifikasi
+     ↓
+Pedagang Memproses
+     ↓
+Pengiriman / Pickup
+     ↓
+Pesanan Diterima
+     ↓
+Selesai
+```
+
+---
+
+# 28. Dashboard Pedagang
+
+Dashboard menampilkan:
+
+```text
+Dashboard Toko
+
+Penjualan Hari Ini
+Rp850.000
+
+Pesanan Baru
+12
+
+Sedang Diproses
+8
+
+Siap Diambil
+3
+
+Sedang Diantar
+2
+
+Selesai
+45
+```
+
+---
+
+# 29. Manajemen Produk Pedagang
+
+Pedagang dapat:
+
+* Tambah produk.
+* Edit produk.
+* Hapus produk.
+* Aktif/nonaktif produk.
+* Mengatur harga.
+* Mengatur stok.
+* Upload foto.
+* Mengatur kategori.
+* Mengatur deskripsi.
+
+Form:
+
+```text
+Nama Produk
+Harga
+Stok
+Kategori
+Deskripsi
+Foto
+Status
+```
+
+---
+
+# 30. Manajemen Toko
+
+Pedagang dapat mengatur:
+
+```text
+Nama Toko
+Foto Toko
+Deskripsi
+Alamat
+Nomor HP
+Jam Operasional
+Status Toko
+```
+
+Status:
+
+```text
+OPEN
+CLOSED
+SUSPENDED
+```
+
+---
+
+# 31. Pengaturan Pengiriman Pedagang
+
+Pedagang dapat menentukan metode yang tersedia.
+
+Contoh:
+
+```text
+Pengiriman
+
+☑ Diantar oleh Penjual
+☑ Ambil di Toko
+```
+
+Pedagang juga dapat mengatur:
+
+```text
+Biaya Pengiriman:
+Rp5.000
+
+Minimal Pembelian:
+Rp25.000
+```
+
+Opsional:
+
+```text
+Gratis Ongkir:
+Minimal belanja Rp100.000
+```
+
+---
+
+# 32. Pengaturan Pembayaran Pedagang
+
+Menu:
+
+```text
+Pengaturan Pembayaran
+```
+
+### Transfer Bank
+
+```text
+Nama Bank
+Nomor Rekening
+Nama Pemilik Rekening
+```
+
+### QRIS
+
+```text
+Upload QRIS
+```
+
+Pedagang dapat:
+
+```text
+Upload QRIS
+Ganti QRIS
+Hapus QRIS
+```
+
+QRIS digunakan kembali pada setiap transaksi.
+
+---
+
+# 33. Dashboard Pengelola
+
+Dashboard admin:
+
+```text
+Marketplace Overview
+
+Total User       : 1.250
+Total Pedagang   : 85
+Total Produk     : 2.450
+Order Hari Ini   : 125
+Penjualan Hari Ini
+                   Rp15.500.000
+```
+
+---
+
+# 34. Manajemen Pedagang
+
+Admin dapat:
+
+* Melihat pedagang.
+* Menyetujui pedagang.
+* Menolak pedagang.
+* Menonaktifkan pedagang.
+* Mengaktifkan kembali pedagang.
+* Melihat dokumen pedagang.
+* Melihat transaksi pedagang.
+
+Status:
+
+```text
+PENDING
+ACTIVE
+REJECTED
+SUSPENDED
+```
+
+---
+
+# 35. Verifikasi Pedagang
+
+Pedagang baru harus melalui proses:
+
+```text
+Registrasi
+    ↓
+Lengkapi Data Toko
+    ↓
+Submit
+    ↓
+Pengelola Review
+    ↓
+APPROVED
+    ↓
+Toko Aktif
+```
+
+Jika ditolak:
+
+```text
+REJECTED
+
+Alasan:
+Data toko belum lengkap.
+```
+
+---
+
+# 36. Manajemen Pengguna
+
+Admin dapat:
+
+* Melihat pengguna.
+* Melihat detail pengguna.
+* Mengubah status.
+* Menonaktifkan akun.
+* Mengaktifkan akun.
+
+Status:
+
+```text
+ACTIVE
+INACTIVE
+BANNED
+```
+
+---
+
+# 37. Manajemen Kategori
+
+Admin dapat membuat kategori:
+
+```text
+Sembako
+Makanan
+Minuman
+Fashion
+Elektronik
+Kesehatan
+Jasa
+Rumah Tangga
+Lainnya
+```
+
+Kategori dapat:
+
+* Tambah.
+* Edit.
+* Hapus.
+* Aktif/nonaktif.
+
+---
+
+# 38. Manajemen Order
+
+Admin dapat melihat seluruh transaksi.
+
+Filter:
+
+```text
+Tanggal
+Pedagang
+Pembeli
+Status
+Metode Pembayaran
+Metode Pengiriman
+```
+
+Detail:
+
+```text
+Order ID
+Pembeli
+Pedagang
+Produk
+Total
+Payment
+Shipping
+Status
+Tanggal
+```
+
+---
+
+# 39. Manajemen Pembayaran
+
+Admin dapat melakukan verifikasi pembayaran manual jika sistem menggunakan metode manual.
+
+Status:
+
+```text
+PENDING
+VERIFIED
+REJECTED
+```
+
+Jika pembayaran ditolak:
+
+```text
+Alasan Penolakan:
+Bukti pembayaran tidak valid.
+```
+
+Pembeli dapat melakukan upload ulang.
+
+---
+
+# 40. Notifikasi
+
+Sistem memberikan notifikasi kepada user.
+
+## Pembeli
+
+Notifikasi:
+
+* Order dibuat.
+* Menunggu pembayaran.
+* Pembayaran diterima.
+* Pembayaran ditolak.
+* Order diproses.
+* Order siap diambil.
+* Order sedang diantar.
+* Order selesai.
+
+## Pedagang
+
+Notifikasi:
+
+* Order baru.
+* Pembayaran masuk.
+* Pembayaran diverifikasi.
+* Order dibatalkan.
+* Komplain.
+
+## Pengelola
+
+Notifikasi:
+
+* Pedagang baru.
+* Transaksi bermasalah.
+* Komplain baru.
+* Pembayaran perlu diverifikasi.
+
+---
+
+# 41. Rating & Review
+
+Setelah order selesai, pembeli dapat memberikan:
+
+```text
+Rating:
+★★★★★
+
+Review:
+"Pelayanan cepat dan barang sesuai."
+```
+
+Rating dapat diberikan untuk:
+
+* Produk.
+* Toko.
+
+Pedagang tidak dapat memberikan rating kepada dirinya sendiri.
+
+---
+
+# 42. Komplain
+
+Pembeli dapat membuat komplain dari order.
+
+Contoh:
+
+```text
+Order #ORD-001
+
+[Ajukan Komplain]
+
+Kategori:
+○ Barang tidak sesuai
+○ Barang rusak
+○ Barang kurang
+○ Pesanan belum diterima
+○ Pembayaran
+○ Lainnya
+
+Deskripsi
+[....................]
+
+Foto bukti
+[ Upload ]
+```
+
+Status:
+
+```text
+OPEN
+IN_REVIEW
+RESOLVED
+REJECTED
+```
+
+---
+
+# 43. Database Utama
+
+## users
+
+```text
+id
+name
+email
+phone
+password
+role
+status
+created_at
+updated_at
+```
+
+Role:
+
+```text
+BUYER
+SELLER
+ADMIN
+```
+
+---
+
+## seller_profiles
+
+```text
+id
+user_id
+store_name
+description
+phone
+address
+latitude
+longitude
+status
+created_at
+updated_at
+```
+
+---
+
+## products
+
+```text
+id
+seller_id
+category_id
+name
+description
+price
+stock
+image
+status
+created_at
+updated_at
+```
+
+---
+
+## categories
+
+```text
+id
+name
+description
+image
+status
+created_at
+updated_at
+```
+
+---
+
+## seller_payment_settings
+
+```text
+id
+seller_id
+
+bank_name
+bank_account_number
+bank_account_name
+
+qris_image
+qris_status
+
+created_at
+updated_at
+```
+
+---
+
+# 44. Orders
+
+```text
+orders
+
+id
+order_number
+buyer_id
+subtotal
+shipping_fee
+total_amount
+status
+created_at
+updated_at
+```
+
+---
+
+# 45. Order Items
+
+```text
+order_items
+
+id
+order_id
+seller_id
+product_id
+product_name
+price
+quantity
+subtotal
+```
+
+---
+
+# 46. Seller Orders / Sub Orders
+
+Untuk mendukung multi-vendor:
+
+```text
+seller_orders
+
+id
+order_id
+seller_id
+subtotal
+shipping_fee
+total_amount
+payment_status
+shipping_method
+shipping_status
+status
+pickup_code
+created_at
+updated_at
+```
+
+---
+
+# 47. Payments
+
+```text
+payments
+
+id
+order_id
+seller_order_id
+buyer_id
+seller_id
+
+method
+amount
+
+status
+
+proof_image
+
+paid_at
+verified_at
+
+created_at
+updated_at
+```
+
+Payment method:
+
+```text
+BANK_TRANSFER
+COD
+QRIS
+```
+
+---
+
+# 48. Shipping
+
+```text
+shipments
+
+id
+seller_order_id
+
+method
+
+address
+recipient_name
+recipient_phone
+
+shipping_fee
+
+status
+
+delivered_at
+completed_at
+
+created_at
+updated_at
+```
+
+Shipping method:
+
+```text
+SELLER_DELIVERY
+STORE_PICKUP
+```
+
+---
+
+# 49. Pickup
+
+```text
+pickup_orders
+
+id
+seller_order_id
+pickup_code
+status
+picked_up_at
+created_at
+updated_at
+```
+
+---
+
+# 50. Reviews
+
+```text
+reviews
+
+id
+order_id
+buyer_id
+seller_id
+product_id
+
+rating
+review
+
+created_at
+updated_at
+```
+
+---
+
+# 51. Complaints
+
+```text
+complaints
+
+id
+order_id
+buyer_id
+seller_id
+
+category
+description
+evidence_image
+
+status
+
+admin_note
+
+created_at
+updated_at
+```
+
+---
+
+# 52. Relasi Database
+
+```text
+USER
+ │
+ ├── BUYER
+ │     └── ORDERS
+ │
+ └── SELLER
+       └── SELLER_PROFILE
+             ├── PRODUCTS
+             ├── PAYMENT_SETTINGS
+             │      └── QRIS IMAGE
+             │
+             └── SELLER_ORDERS
+```
+
+Order:
+
+```text
+ORDER
+ │
+ ├── ORDER_ITEMS
+ │
+ └── SELLER_ORDERS
+       │
+       ├── PAYMENT
+       │
+       ├── SHIPMENT
+       │
+       └── PICKUP
+```
+
+---
+
+# 53. API Utama
+
+## Authentication
+
+```http
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/logout
+GET  /api/auth/me
+```
+
+---
+
+## Products
+
+```http
+GET    /api/products
+GET    /api/products/{id}
+POST   /api/seller/products
+PUT    /api/seller/products/{id}
+DELETE /api/seller/products/{id}
+```
+
+---
+
+## Cart
+
+```http
+GET    /api/cart
+POST   /api/cart/items
+PUT    /api/cart/items/{id}
+DELETE /api/cart/items/{id}
+```
+
+---
+
+## Orders
+
+```http
+POST /api/orders
+GET  /api/orders
+GET  /api/orders/{id}
+POST /api/orders/{id}/cancel
+POST /api/orders/{id}/complete
+```
+
+---
+
+## Seller Orders
+
+```http
+GET  /api/seller/orders
+GET  /api/seller/orders/{id}
+POST /api/seller/orders/{id}/accept
+POST /api/seller/orders/{id}/process
+POST /api/seller/orders/{id}/ready
+POST /api/seller/orders/{id}/deliver
+POST /api/seller/orders/{id}/complete
+```
+
+---
+
+# 54. Payment API
+
+```http
+POST /api/orders/{id}/payment
+
+GET /api/payments/{id}
+
+POST /api/payments/{id}/proof
+
+POST /api/payments/{id}/verify
+
+POST /api/payments/{id}/reject
+```
+
+---
+
+# 55. QRIS API
+
+```http
+GET /api/seller/payment-settings
+
+POST /api/seller/payment-settings/qris
+
+PUT /api/seller/payment-settings/qris
+
+DELETE /api/seller/payment-settings/qris
+```
+
+Ketika checkout:
+
+```http
+GET /api/seller/{sellerId}/payment/qris
+```
+
+Sistem mengambil QRIS yang tersimpan.
+
+---
+
+# 56. Shipping API
+
+```http
+POST /api/orders/{id}/shipping
+
+GET /api/orders/{id}/shipping
+
+POST /api/seller-orders/{id}/ready
+
+POST /api/seller-orders/{id}/out-for-delivery
+
+POST /api/seller-orders/{id}/delivered
+```
+
+---
+
+# 57. Pickup API
+
+```http
+GET /api/seller-orders/{id}/pickup
+
+POST /api/seller-orders/{id}/pickup/verify
+```
+
+---
+
+# 58. Security
+
+Sistem harus menerapkan:
+
+* Password hashing.
+* JWT/session authentication.
+* Role Based Access Control.
+* Validasi request.
+* Validasi upload file.
+* Rate limiting.
+* CSRF protection jika menggunakan session.
+* SQL injection protection.
+* XSS protection.
+* Access control pada setiap endpoint.
+
+Contoh:
+
+```text
+BUYER tidak boleh:
+
+PUT /api/seller/products/{id}
+```
+
+dan:
+
+```text
+SELLER tidak boleh:
+
+GET /api/admin/users
+```
+
+---
+
+# 59. File Upload
+
+File yang diperbolehkan:
+
+```text
+jpg
+jpeg
+png
+webp
+```
+
+Untuk QRIS:
+
+```text
+MAX_SIZE = 5 MB
+```
+
+File harus disimpan menggunakan storage yang aman.
+
+Database hanya menyimpan:
+
+```text
+file_url
+```
+
+bukan binary image secara langsung.
+
+---
+
+# 60. QRIS Business Rule
+
+Business rules:
+
+### Rule 1
+
+Satu pedagang memiliki maksimal satu QRIS aktif.
+
+```text
+seller_id UNIQUE
+qris_status = ACTIVE
+```
+
+### Rule 2
+
+Pedagang dapat mengganti QRIS.
+
+Saat upload baru:
+
+```text
+QRIS lama
+    ↓
+INACTIVE
+
+QRIS baru
+    ↓
+ACTIVE
+```
+
+### Rule 3
+
+QRIS hanya muncul jika:
+
+```text
+seller.qris_status = ACTIVE
+```
+
+### Rule 4
+
+Jika tidak ada QRIS:
+
+```text
+QRIS tidak tersedia.
+```
+
+### Rule 5
+
+QRIS yang digunakan pada transaksi harus direferensikan pada payment record agar histori transaksi tidak berubah apabila pedagang mengganti QRIS di kemudian hari.
+
+Contoh:
+
+```text
+payment.qris_image_snapshot
+```
+
+---
+
+# 61. Order Business Rules
+
+### Rule 1
+
+Pembeli tidak dapat checkout jika stok tidak mencukupi.
+
+### Rule 2
+
+Stok dikurangi ketika order dikonfirmasi sesuai strategi inventory yang dipilih.
+
+### Rule 3
+
+Order yang belum dibayar dapat memiliki batas waktu pembayaran.
+
+Contoh:
+
+```text
+15 menit
+```
+
+### Rule 4
+
+Order expired otomatis dibatalkan.
+
+### Rule 5
+
+Pedagang hanya dapat melihat order miliknya.
+
+### Rule 6
+
+Pembeli hanya dapat melihat order miliknya.
+
+### Rule 7
+
+Admin dapat melihat seluruh order.
+
+---
+
+# 62. Payment Business Rules
+
+## Transfer
+
+```text
+ORDER
+ ↓
+WAITING_PAYMENT
+ ↓
+UPLOAD PROOF
+ ↓
+WAITING_VERIFICATION
+ ↓
+VERIFIED
+ ↓
+PROCESSING
+```
+
+## QRIS
+
+```text
+ORDER
+ ↓
+QRIS
+ ↓
+SCAN QRIS
+ ↓
+TRANSFER
+ ↓
+UPLOAD PROOF
+ ↓
+VERIFICATION
+ ↓
+PAID
+```
+
+## COD
+
+```text
+ORDER
+ ↓
+COD
+ ↓
+PROCESSING
+ ↓
+DELIVERY / PICKUP
+ ↓
+PAYMENT
+ ↓
+COMPLETED
+```
+
+---
+
+# 63. Pengiriman Business Rules
+
+## Seller Delivery
+
+```text
+PAID
+ ↓
+PROCESSING
+ ↓
+READY_FOR_DELIVERY
+ ↓
+OUT_FOR_DELIVERY
+ ↓
+DELIVERED
+ ↓
+COMPLETED
+```
+
+## Store Pickup
+
+```text
+PAID
+ ↓
+PROCESSING
+ ↓
+READY_FOR_PICKUP
+ ↓
+PICKUP_CODE_VERIFICATION
+ ↓
+PICKED_UP
+ ↓
+COMPLETED
+```
+
+---
+
+# 64. Dashboard Pembeli
+
+Menu:
+
+```text
+Home
+Produk
+Kategori
+Keranjang
+Pesanan
+Favorit
+Profil
+```
+
+Pesanan:
+
+```text
+Semua
+Menunggu Pembayaran
+Diproses
+Dikirim
+Siap Diambil
+Selesai
+Dibatalkan
+```
+
+---
+
+# 65. Dashboard Pedagang
+
+Menu:
+
+```text
+Dashboard
+Pesanan
+Produk
+Kategori
+Toko
+Pembayaran
+QRIS
+Pengiriman
+Laporan
+Pengaturan
+```
+
+---
+
+# 66. Dashboard Admin
+
+Menu:
+
+```text
+Dashboard
+Users
+Pedagang
+Produk
+Kategori
+Orders
+Payments
+Complaints
+Reports
+Settings
+```
+
+---
+
+# 67. Laporan
+
+## Pedagang
+
+Pedagang dapat melihat:
+
+```text
+Penjualan Hari Ini
+Penjualan Minggu Ini
+Penjualan Bulan Ini
+
+Jumlah Order
+Produk Terlaris
+Pendapatan
+```
+
+Filter:
+
+```text
+Hari
+Minggu
+Bulan
+Custom Date
+```
+
+---
+
+## Admin
+
+Admin dapat melihat:
+
+```text
+Total GMV
+Total Orders
+Total Pedagang
+Total Pembeli
+Total Produk
+
+Penjualan per Hari
+Penjualan per Pedagang
+Penjualan per Kategori
+Metode Pembayaran
+Metode Pengiriman
+```
+
+---
+
+# 68. Statistik Pembayaran
+
+Contoh:
+
+```text
+Pembayaran Bulan Ini
+
+Transfer Bank     35%
+QRIS              50%
+COD               15%
+```
+
+Statistik dapat ditampilkan dalam:
+
+* Chart.
+* Table.
+* Export Excel/CSV.
+
+---
+
+# 69. Audit Log
+
+Sistem menyimpan aktivitas penting.
+
+Contoh:
+
+```text
+USER_LOGIN
+PRODUCT_CREATED
+PRODUCT_UPDATED
+ORDER_CREATED
+PAYMENT_UPLOADED
+PAYMENT_VERIFIED
+QRIS_UPDATED
+ORDER_CANCELLED
+ORDER_COMPLETED
+```
+
+Data:
+
+```text
+id
+user_id
+action
+entity_type
+entity_id
+metadata
+ip_address
+created_at
+```
+
+---
+
+# 70. Notifikasi Real-Time
+
+Sistem dapat menggunakan:
+
+* WebSocket.
+* Server-Sent Events.
+* Push Notification.
+
+Contoh:
+
+```text
+Pembeli:
+
+"Pesanan #ORD-001 sudah diproses oleh Toko Pak Budi."
+
+Pedagang:
+
+"Pesanan baru #ORD-001 telah masuk."
+
+Admin:
+
+"Pedagang baru membutuhkan verifikasi."
+```
+
+---
+
+# 71. Responsive Design
+
+Aplikasi harus mendukung:
+
+* Desktop.
+* Tablet.
+* Mobile.
+
+Prioritas utama:
+
+```text
+Mobile First
+```
+
+Karena mayoritas transaksi marketplace dilakukan melalui smartphone.
+
+---
+
+# 72. Non-Functional Requirements
+
+## Performance
+
+Target:
+
+```text
+API response:
+< 500 ms untuk request normal
+
+Page load:
+< 3 detik
+
+Image optimization:
+WebP / compressed image
+```
+
+---
+
+# 73. Availability
+
+Target awal:
+
+```text
+99.5%
+```
+
+Sistem harus memiliki:
+
+* Logging.
+* Monitoring.
+* Error tracking.
+* Backup database.
+* Backup file upload.
+
+---
+
+# 74. Backup
+
+Database:
+
+```text
+Daily Backup
+```
+
+File:
+
+```text
+Daily Backup
+```
+
+Retention dapat dikonfigurasi.
+
+Contoh:
+
+```text
+7 hari
+30 hari
+90 hari
+```
+
+---
+
+# 75. MVP
+
+Versi pertama harus mencakup:
+
+### Authentication
+
+* Register.
+* Login.
+* Role.
+
+### Buyer
+
+* Home.
+* Produk.
+* Search.
+* Cart.
+* Checkout.
+* Order.
+* Payment.
+* Tracking.
+
+### Seller
+
+* Dashboard.
+* Toko.
+* Produk.
+* Order.
+* Payment.
+* QRIS.
+* Shipping.
+
+### Admin
+
+* Dashboard.
+* User.
+* Seller.
+* Product.
+* Category.
+* Order.
+* Payment.
+
+### Payment
+
+* Transfer Bank.
+* COD.
+* QRIS.
+
+### Shipping
+
+* Seller Delivery.
+* Store Pickup.
+
+---
+
+# 76. Fitur Setelah MVP
+
+Fitur fase berikutnya:
+
+* Voucher.
+* Promo.
+* Flash sale.
+* Favorite.
+* Chat pembeli ↔ pedagang.
+* Push notification.
+* WhatsApp notification.
+* Automatic payment gateway.
+* Automatic QRIS payment verification.
+* Loyalty point.
+* Membership.
+* Subscription pedagang.
+* Delivery tracking.
+* Driver khusus perumahan.
+* Rating.
+* Review.
+* Referral.
+* Pre-order.
+* Product variation.
+
+---
+
+# 77. Rekomendasi Teknologi
+
+Contoh stack yang dapat digunakan:
+
+## Frontend
+
+```text
+Next.js
+React
+Tailwind CSS
+```
+
+## Backend
+
+Pilihan:
+
+```text
+Node.js
+NestJS / Express
+```
+
+atau:
+
+```text
+Laravel
+```
+
+## Database
+
+```text
+PostgreSQL
+```
+
+atau:
+
+```text
+MySQL
+```
+
+## Authentication
+
+```text
+JWT
+```
+
+## Storage
+
+```text
+S3 Compatible Storage
+```
+
+atau storage lokal untuk MVP.
+
+## Cache
+
+```text
+Redis
+```
+
+## Deployment
+
+```text
+Docker
+Linux Server
+Nginx
+```
+
+---
+
+# 78. Struktur Project
+
+Contoh:
+
+```text
+marketplace-perumahan/
+│
+├── frontend/
+│   ├── pages/
+│   ├── components/
+│   ├── layouts/
+│   └── services/
+│
+├── backend/
+│   ├── modules/
+│   │   ├── auth/
+│   │   ├── users/
+│   │   ├── sellers/
+│   │   ├── products/
+│   │   ├── categories/
+│   │   ├── carts/
+│   │   ├── orders/
+│   │   ├── payments/
+│   │   ├── shipping/
+│   │   ├── pickup/
+│   │   ├── reviews/
+│   │   └── complaints/
+│   │
+│   ├── database/
+│   └── config/
+│
+├── storage/
+│   ├── products/
+│   ├── qris/
+│   └── payment-proofs/
+│
+├── docs/
+│
+└── README.md
+```
+
+---
+
+# 79. Acceptance Criteria
+
+## Seller QRIS
+
+* [ ] Pedagang dapat upload QRIS.
+* [ ] Pedagang hanya memiliki satu QRIS aktif.
+* [ ] Pedagang dapat mengganti QRIS.
+* [ ] QRIS dapat ditampilkan pada checkout.
+* [ ] QRIS yang muncul sesuai dengan pedagang.
+* [ ] QRIS lama tidak digunakan untuk transaksi baru.
+* [ ] Histori transaksi tetap menyimpan referensi QRIS yang digunakan.
+
+---
+
+## Payment
+
+* [ ] Pembeli dapat memilih Transfer Bank.
+* [ ] Pembeli dapat memilih COD.
+* [ ] Pembeli dapat memilih QRIS.
+* [ ] Pembeli dapat upload bukti pembayaran.
+* [ ] Admin/pedagang dapat melakukan verifikasi.
+* [ ] Sistem mencatat status pembayaran.
+
+---
+
+## Shipping
+
+* [ ] Pembeli dapat memilih seller delivery.
+* [ ] Pembeli dapat memilih store pickup.
+* [ ] Pedagang dapat melihat metode pengiriman.
+* [ ] Status pengiriman dapat diperbarui.
+* [ ] Pickup menggunakan kode pengambilan.
+* [ ] Pesanan dapat diselesaikan setelah barang diterima/diambil.
+
+---
+
+## Marketplace
+
+* [ ] Satu marketplace mendukung banyak pedagang.
+* [ ] Pedagang hanya dapat mengelola produknya.
+* [ ] Pembeli dapat membeli produk.
+* [ ] Keranjang mendukung produk dari beberapa pedagang.
+* [ ] Order dapat dipisahkan menjadi sub-order berdasarkan pedagang.
+* [ ] Admin dapat memonitor seluruh transaksi.
+
+---
+
+# 80. Definition of Done
+
+Fitur dianggap selesai apabila:
+
+1. Backend API tersedia.
+2. Database migration tersedia.
+3. Authentication berjalan.
+4. Role & permission berjalan.
+5. UI tersedia.
+6. Validation tersedia.
+7. Error handling tersedia.
+8. Logging tersedia.
+9. Unit test tersedia untuk business logic utama.
+10. Integration test untuk checkout tersedia.
+11. Payment flow telah diuji.
+12. QRIS flow telah diuji.
+13. Seller delivery telah diuji.
+14. Store pickup telah diuji.
+15. Multi-vendor checkout telah diuji.
+16. Security basic checklist terpenuhi.
+17. Dokumentasi API tersedia.
+18. Deployment berhasil.
+
+---
+
+# 81. Prioritas Implementasi
+
+## Phase 1 — Foundation
+
+```text
+Authentication
+Role
+User
+Database
+Admin
+```
+
+## Phase 2 — Marketplace
+
+```text
+Seller
+Store
+Category
+Product
+Search
+```
+
+## Phase 3 — Shopping
+
+```text
+Cart
+Checkout
+Order
+Multi-vendor
+```
+
+## Phase 4 — Payment
+
+```text
+Transfer Bank
+COD
+QRIS
+Payment Proof
+Verification
+```
+
+## Phase 5 — Delivery
+
+```text
+Seller Delivery
+Store Pickup
+Pickup Code
+Order Tracking
+```
+
+## Phase 6 — Management
+
+```text
+Dashboard
+Reports
+Complaints
+Audit Log
+Notification
+```
+
+---
+
+# 82. Kesimpulan
+
+Marketplace Perumahan merupakan platform **multi-vendor marketplace** yang dirancang khusus untuk transaksi di lingkungan perumahan.
+
+Fokus MVP adalah:
+
+```text
+PEMBELI
+   ↓
+Cari Produk
+   ↓
+Keranjang
+   ↓
+Checkout
+   ↓
+Pilih Pembayaran
+   ├── Transfer
+   ├── COD
+   └── QRIS
+          ↓
+      QRIS Pedagang
+      (Upload 1x)
+          ↓
+      Upload Bukti
+   ↓
+Pedagang
+   ↓
+Proses Order
+   ↓
+Pengiriman
+   ├── Diantar Penjual
+   └── Ambil di Toko
+   ↓
+Pesanan Selesai
+```
+
+Sistem dirancang agar QRIS menjadi konfigurasi permanen pada level pedagang, bukan sesuatu yang harus diupload ulang pada setiap transaksi. Dengan demikian, pedagang cukup memasukkan QRIS sekali, sedangkan sistem akan otomatis menampilkan QRIS tersebut setiap kali pembeli melakukan checkout menggunakan metode QRIS.
