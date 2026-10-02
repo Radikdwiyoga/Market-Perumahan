@@ -1,58 +1,105 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Marketplace Perumahan
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Platform marketplace multi-vendor khusus lingkungan perumahan yang memungkinkan warga membeli dan menjual produk/jasa dari pedagang (seller) di dalam atau sekitar lingkungan perumahan.
 
-## About Laravel
+## Fitur
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Pembeli**
+- Jelajahi marketplace, pencarian produk, detail produk & toko
+- Keranjang belanja dan daftar favorit
+- Checkout dan pemesanan multi-seller
+- Upload bukti pembayaran, konfirmasi pesanan diterima
+- Ulasan produk dan komplain pesanan
+- Notifikasi realtime (SSE), chat dengan seller
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Seller**
+- Pendaftaran & verifikasi seller oleh admin
+- Kelola produk (dengan deskripsi berbantuan AI), toko, ongkir, dan pengaturan pembayaran (rekening/QRIS)
+- Kelola pesanan: terima, proses, kirim, verifikasi QR pickup
+- Verifikasi pembayaran masuk, laporan penjualan & ekspor
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+**Admin**
+- Dashboard, audit log, dan manajemen pengguna (aktif/nonaktif, verifikasi/tolak seller)
+- Kelola kategori, pantau pesanan, verifikasi/tolak pembayaran
+- Tangani komplain dan laporan transaksi & ekspor
 
-## Learning Laravel
+**API**
+- REST API berbasis Laravel Sanctum (token) untuk aplikasi mobile/klien lain: auth, produk, kategori, toko, keranjang, favorit, pesanan, pengiriman, pembayaran, dan endpoint seller
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Teknologi
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.3, Laravel 13 (Blade + controllers)
+- Laravel Sanctum untuk autentikasi API
+- Tailwind CSS v4 + Vite
+- SQLite untuk pengembangan lokal (MySQL untuk produksi, lihat `.env.example`)
+- PHPUnit untuk pengujian, Laravel Pint untuk formatting
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalasi
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone <url-repo> Market-Perumahan
+cd Market-Perumahan
+composer setup
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Perintah `composer setup` akan menjalankan: `composer install`, menyalin `.env`, `key:generate`, migrasi, `npm install`, dan `npm run build`.
 
-## Contributing
+Atau manual:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+npm install
+npm run build
+```
 
-## Code of Conduct
+Isi data contoh:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+php artisan db:seed
+```
 
-## Security Vulnerabilities
+## Menjalankan Aplikasi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+composer run dev
+```
 
-## License
+Perintah ini menjalankan server Laravel, queue worker, log viewer (Pail), dan Vite secara bersamaan. Aplikasi dapat diakses di URL yang ditampilkan (default `http://localhost:8000`, sesuaikan `APP_URL`).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Alternatif terpisah:
+
+```bash
+php artisan serve
+npm run dev
+```
+
+## Pengujian
+
+```bash
+php artisan test --compact
+```
+
+Format kode sebelum commit:
+
+```bash
+vendor/bin/pint --dirty
+```
+
+## Struktur Direktori
+
+- `app/Http/Controllers` — controller web (pembeli, seller, admin)
+- `app/Http/Controllers/Api` — controller REST API
+- `app/Models` — model Eloquent (User, Product, Order, Payment, Shipment, dll.)
+- `resources/views` — Blade templates per area (marketplace, seller, admin, auth, dst.)
+- `routes/web.php` — rute web; `routes/api.php` — rute API
+- `database/migrations` & `database/seeders` — skema dan data contoh
+- `PRD.txt` — dokumen kebutuhan produk
+
+## Catatan Produksi
+
+- Atur `DB_CONNECTION=mysql` beserta kredensialnya di `.env` (contoh pada `.env.example`).
+- Set `QUEUE_CONNECTION` sesuai worker yang tersedia; pada hosting tanpa queue worker gunakan `sync`.
+- Jalankan `npm run build` untuk aset produksi.
