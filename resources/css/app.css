@@ -6,4 +6,94 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Market UMKM Color Palette */
+    --color-forest-950: #022c22;
+    --color-forest-900: #064e3b;
+    --color-forest-800: #065f46;
+    --color-forest-700: #047857;
+    --color-forest-600: #059669;
+    --color-forest-500: #10b981;
+    --color-forest-400: #34d399;
+    --color-forest-300: #6ee7b7;
+    --color-forest-200: #a7f3d0;
+    --color-forest-100: #d1fae5;
+    --color-forest-50: #ecfdf5;
+
+    --color-sage-900: #2d4a3e;
+    --color-sage-800: #3d6b56;
+    --color-sage-700: #4a7c6e;
+    --color-sage-600: #5a8d7d;
+    --color-sage-500: #6b9e8d;
+    --color-sage-400: #8ab8a8;
+    --color-sage-300: #a8d0c3;
+    --color-sage-200: #c7e5de;
+    --color-sage-100: #e5f2ed;
+    --color-sage-50: #f2f9f7;
+
+    --color-warm-white: #fdfcf8;
+    --color-warm-50: #faf8f1;
+    --color-warm-100: #f3eee0;
+    --color-warm-200: #e6ddc3;
+    --color-warm-300: #d4c599;
+    --color-warm-400: #c2ad70;
+    --color-warm-500: #b09654;
+    --color-warm-600: #9d7f48;
+    --color-warm-700: #8a6a3f;
+    --color-warm-800: #765837;
+    --color-warm-900: #654a31;
+
+    --color-lime-600: #65a30d;
+    --color-lime-500: #84cc16;
+    --color-lime-400: #a3e63b;
+    --color-lime-300: #bef264;
+    --color-lime-200: #d9f99d;
+    --color-lime-100: #ecfccb;
+    --color-lime-50: #f7fee7;
+
+    /* Semantic aliases */
+    --color-primary: var(--color-forest-700);
+    --color-primary-hover: var(--color-forest-800);
+    --color-primary-light: var(--color-forest-100);
+    --color-primary-foreground: var(--color-warm-white);
+
+    --color-secondary: var(--color-sage-600);
+    --color-secondary-hover: var(--color-sage-700);
+    --color-secondary-light: var(--color-sage-100);
+
+    --color-accent: var(--color-lime-400);
+    --color-accent-hover: var(--color-lime-300);
+    --color-accent-foreground: var(--color-forest-950);
+
+    --color-surface: var(--color-warm-white);
+    --color-surface-muted: var(--color-warm-50);
+    --color-surface-elevated: #ffffff;
+
+    --color-text-primary: var(--color-forest-950);
+    --color-text-secondary: var(--color-sage-700);
+    --color-text-muted: var(--color-sage-500);
+
+    --color-border: var(--color-warm-200);
+    --color-border-strong: var(--color-warm-300);
+
+    --color-success: var(--color-forest-600);
+    --color-success-light: var(--color-forest-100);
+    --color-warning: var(--color-warm-600);
+    --color-warning-light: var(--color-warm-100);
+    --color-error: #dc2626;
+    --color-error-light: #fef2f2;
+
+    /* Shadows */
+    --shadow-soft: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    --shadow-card: 0 4px 12px -2px rgb(6 78 59 / 0.08), 0 2px 6px -2px rgb(6 78 59 / 0.04);
+    --shadow-elevated: 0 10px 25px -3px rgb(6 78 59 / 0.1), 0 4px 12px -4px rgb(6 78 59 / 0.06);
+    --shadow-glow: 0 0 0 1px var(--color-forest-200), 0 0 20px -5px var(--color-forest-300);
+
+    /* Radius */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --radius-full: 9999px;
 }

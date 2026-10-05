@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -6,24 +6,47 @@
     <title>Panel Admin - Market UMKM Perumahan</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-100 text-slate-900">
+<body class="min-h-screen bg-warm-50 pb-20 text-forest-950 sm:pb-0">
     <x-notification-stream />
-    <header class="border-b border-slate-200 bg-white"><div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-5"><div><a href="{{ route('dashboard') }}" class="text-sm font-bold text-emerald-700">&larr; Dashboard</a><h1 class="mt-1 text-2xl font-black">Panel admin</h1></div><div class="flex items-center gap-2"><a href="{{ route('notifications.index') }}" data-notification-bell class="relative rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold">Notifikasi<span class="badge-count absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 text-xs font-bold text-white {{ $unreadNotifications > 0 ? '' : 'hidden' }}" data-count="{{ $unreadNotifications }}">{{ $unreadNotifications }}</span></a><form action="{{ route('logout') }}" method="POST">@csrf<button class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold">Keluar</button></form></div></div></header>
+    <x-app-header :unread-notifications="$unreadNotifications" :unread-chats="0" />
     <main class="mx-auto max-w-7xl px-6 py-10">
-        <p class="text-slate-500">Ringkasan aktivitas Market UMKM Perumahan</p>
-        @if (session('status'))<div class="mt-6 rounded-lg bg-emerald-100 p-4 text-sm font-semibold text-emerald-800">{{ session('status') }}</div>@endif
+        <h1 class="text-2xl font-black">Panel admin</h1>
+        <p class="text-sage-500">Ringkasan aktivitas Market UMKM Perumahan</p>
+        @if (session('status'))<div class="mt-6 rounded-lg bg-forest-100 px-4 py-3 text-sm font-semibold text-forest-800">{{ session('status') }}</div>@endif
         @if ($pendingSellerApprovals > 0)
             <div class="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-300 bg-amber-50 p-5">
                 <div>
                     <p class="text-sm font-bold uppercase tracking-wider text-amber-700">Verifikasi toko</p>
-                    <p class="mt-1 text-slate-700">{{ $pendingSellerApprovals }} pengajuan toko menunggu tinjauan Anda.</p>
+                    <p class="mt-1 text-warm-800">{{ $pendingSellerApprovals }} pengajuan toko menunggu tinjauan Anda.</p>
                 </div>
                 <a href="{{ route('admin.users.index', ['verification' => 'pending']) }}" class="rounded-xl bg-amber-600 px-5 py-3 font-bold text-white hover:bg-amber-700">Tinjau pengajuan</a>
             </div>
         @endif
-        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">@foreach ([['Pengguna', $stats['users']], ['Seller', $stats['sellers']], ['Toko', $stats['stores']], ['Produk', $stats['products']], ['Pesanan', $stats['orders']], ['Kategori', $stats['categories']]] as [$label, $value])<article class="rounded-2xl bg-white p-6 shadow-sm"><p class="text-sm text-slate-500">{{ $label }}</p><p class="mt-2 text-3xl font-black text-emerald-800">{{ $value }}</p></article>@endforeach</div>
-        <section class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"><article class="rounded-2xl bg-white p-6 shadow-sm"><p class="text-sm font-bold uppercase tracking-wider text-emerald-700">Manajemen pengguna</p><h2 class="mt-1 text-2xl font-black">Buat buyer atau seller</h2><p class="mt-2 text-slate-500">Seller baru langsung dibuatkan profil toko.</p><a href="{{ route('admin.users.create') }}" class="mt-5 inline-block rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white">Buat akun</a></article><article class="rounded-2xl bg-white p-6 shadow-sm"><p class="text-sm font-bold uppercase tracking-wider text-emerald-700">Manajemen katalog</p><h2 class="mt-1 text-2xl font-black">Kategori produk</h2><p class="mt-2 text-slate-500">Atur kategori aktif dan nonaktif.</p><a href="{{ route('admin.categories.index') }}" class="mt-5 inline-block rounded-xl border border-slate-300 px-5 py-3 font-bold text-slate-700">Kelola kategori</a></article><article class="rounded-2xl bg-white p-6 shadow-sm"><p class="text-sm font-bold uppercase tracking-wider text-emerald-700">Komplain buyer</p><h2 class="mt-1 text-2xl font-black">Tindak lanjut komplain</h2><p class="mt-2 text-slate-500">Lihat semua laporan warga beserta bukti foto dan perbarui statusnya.</p><div class="mt-5 flex flex-wrap items-center gap-3"><a href="{{ route('admin.complaints.index') }}" class="inline-block rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white">Kelola komplain</a>@if ($openComplaints > 0)<span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">{{ $openComplaints }} menunggu</span>@endif</div></article><article class="rounded-2xl bg-white p-6 shadow-sm"><p class="text-sm font-bold uppercase tracking-wider text-emerald-700">Laporan</p><h2 class="mt-1 text-2xl font-black">Statistik penjualan</h2><p class="mt-2 text-slate-500">GMV, penjualan per pedagang/kategori, dan metode pembayaran. Ekspor CSV tersedia.</p><a href="{{ route('admin.reports.index') }}" class="mt-5 inline-block rounded-xl border border-slate-300 px-5 py-3 font-bold text-slate-700">Buka laporan</a></article><article class="rounded-2xl bg-white p-6 shadow-sm"><p class="text-sm font-bold uppercase tracking-wider text-emerald-700">Audit log</p><h2 class="mt-1 text-2xl font-black">Riwayat aktivitas</h2><p class="mt-2 text-slate-500">Pantau aktivitas penting seperti login, produk, dan pembayaran.</p><a href="{{ route('admin.audit-logs.index') }}" class="mt-5 inline-block rounded-xl border border-slate-300 px-5 py-3 font-bold text-slate-700">Lihat audit log</a></article></section>
-        <section class="mt-8 rounded-2xl bg-white p-6 shadow-sm"><h2 class="text-xl font-black">Pesanan terbaru</h2><div class="mt-4 divide-y divide-slate-100">@forelse ($recentOrders as $order)<div class="flex flex-wrap justify-between gap-3 py-4"><div><p class="font-bold">{{ $order->order_number }}</p><p class="text-sm text-slate-500">{{ $order->buyer->name }}</p></div><div class="text-right"><p class="font-bold text-emerald-800">Rp{{ number_format($order->total_amount, 0, ',', '.') }}</p><p class="text-sm text-slate-500">{{ ucfirst($order->status) }}</p></div></div>@empty<p class="py-6 text-slate-500">Belum ada pesanan.</p>@endforelse</div></section>
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">@foreach ([['Pengguna', $stats['users']], ['Seller', $stats['sellers']], ['Toko', $stats['stores']], ['Produk', $stats['products']], ['Pesanan', $stats['orders']], ['Kategori', $stats['categories']]] as [$label, $value])<article class="rounded-2xl bg-warm-white p-6 shadow-soft"><p class="text-sm text-sage-500">{{ $label }}</p><p class="mt-2 text-3xl font-black text-forest-700">{{ $value }}</p></article>@endforeach</div>
+        <section class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <article class="rounded-2xl bg-warm-white p-6 shadow-soft"><p class="text-sm font-bold uppercase tracking-wider text-forest-700">Manajemen pengguna</p><h2 class="mt-1 text-2xl font-black">Buat buyer atau seller</h2><p class="mt-2 text-sage-500">Seller baru langsung dibuatkan profil toko.</p><a href="{{ route('admin.users.create') }}" class="mt-5 inline-block rounded-xl bg-forest-700 px-5 py-3 font-bold text-white hover:bg-forest-800">Buat akun</a></article>
+            <article class="rounded-2xl bg-warm-white p-6 shadow-soft"><p class="text-sm font-bold uppercase tracking-wider text-forest-700">Manajemen katalog</p><h2 class="mt-1 text-2xl font-black">Kategori produk</h2><p class="mt-2 text-sage-500">Atur kategori aktif dan nonaktif.</p><a href="{{ route('admin.categories.index') }}" class="mt-5 inline-block rounded-xl border border-warm-200 px-5 py-3 font-bold text-sage-700 hover:bg-warm-50">Kelola kategori</a></article>
+            <article class="rounded-2xl bg-warm-white p-6 shadow-soft"><p class="text-sm font-bold uppercase tracking-wider text-forest-700">Komplain buyer</p><h2 class="mt-1 text-2xl font-black">Tindak lanjut komplain</h2><p class="mt-2 text-sage-500">Lihat semua laporan warga beserta bukti foto dan perbarui statusnya.</p><div class="mt-5 flex flex-wrap items-center gap-3"><a href="{{ route('admin.complaints.index') }}" class="inline-block rounded-xl bg-forest-700 px-5 py-3 font-bold text-white hover:bg-forest-800">Kelola komplain</a>@if ($openComplaints > 0)<span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">{{ $openComplaints }} menunggu</span>@endif</div></article>
+            <article class="rounded-2xl bg-warm-white p-6 shadow-soft"><p class="text-sm font-bold uppercase tracking-wider text-forest-700">Laporan</p><h2 class="mt-1 text-2xl font-black">Statistik penjualan</h2><p class="mt-2 text-sage-500">GMV, penjualan per pedagang/kategori, dan metode pembayaran. Ekspor CSV tersedia.</p><a href="{{ route('admin.reports.index') }}" class="mt-5 inline-block rounded-xl border border-warm-200 px-5 py-3 font-bold text-sage-700 hover:bg-warm-50">Buka laporan</a></article>
+            <article class="rounded-2xl bg-warm-white p-6 shadow-soft"><p class="text-sm font-bold uppercase tracking-wider text-forest-700">Audit log</p><h2 class="mt-1 text-2xl font-black">Riwayat aktivitas</h2><p class="mt-2 text-sage-500">Pantau aktivitas penting seperti login, produk, dan pembayaran.</p><a href="{{ route('admin.audit-logs.index') }}" class="mt-5 inline-block rounded-xl border border-warm-200 px-5 py-3 font-bold text-sage-700 hover:bg-warm-50">Lihat audit log</a></article>
+        </section>
+        <section class="mt-8 rounded-2xl bg-warm-white p-6 shadow-soft"><h2 class="text-xl font-black">Pesanan terbaru</h2><div class="mt-4 divide-y divide-warm-100">@forelse ($recentOrders as $order)<div class="flex flex-wrap justify-between gap-3 py-4"><div><p class="font-bold">{{ $order->order_number }}</p><p class="text-sm text-sage-500">{{ $order->buyer->name }}</p></div><div class="text-right"><p class="font-bold text-forest-700">Rp{{ number_format($order->total_amount, 0, ',', '.') }}</p><p class="text-sm text-sage-500">{{ ucfirst($order->status) }}</p></div></div>@empty<p class="py-6 text-sage-500">Belum ada pesanan.</p>@endforelse</div></section>
+        <section class="mt-10 sm:hidden">
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-xl border border-warm-200 bg-warm-white px-5 py-3.5 font-bold text-sage-700">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/>
+                    </svg>
+                    Keluar akun
+                </button>
+            </form>
+        </section>
     </main>
+
+    <x-mobile-bottom-nav :unread-notifications="$unreadNotifications" :unread-chats="0" />
 </body>
 </html>
+
+
+
