@@ -18,6 +18,7 @@ class SellerShippingController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $store = $this->sellerStore();
+        $this->ensureStoreCanOperate($store);
         $validated = $request->validate([
             'delivery_fee' => ['required', 'integer', 'min:0', 'max:1000000'],
             'min_order_amount' => ['required', 'integer', 'min:0', 'max:100000000'],

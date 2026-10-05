@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\SellerProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -210,6 +211,136 @@ class SellerVerificationTest extends TestCase
         $this->actingAs($buyer)->get(route('dashboard'))->assertOk()->assertSee('Perbaiki data toko Anda lalu kirim ulang');
 
         $this->actingAs($approvedSeller)->get(route('dashboard'))->assertOk()->assertSee('Buka dashboard toko');
+    }
+
+    public function test_pending_seller_cannot_open_their_own_store(): void
+    {
+        $seller = User::factory()->create(['role' => 'buyer']);
+        $this->submitApplication($seller, 'Toko Menunggu');
+        $store = SellerProfile::query()->where('user_id', $seller->id)->firstOrFail();
+
+        $this->actingAs($seller)->put(route('seller.store.update'), [
+            'store_name' => 'Toko Menunggu',
+            'phone' => '081200000002',
+            'address' => 'Blok B1 No. 2',
+            'status' => 'open',
+        ])->assertForbidden();
+
+        $this->assertSame('closed', $store->refresh()->status);
+        $this->assertSame('pending', $store->verification_status);
+        $this->get(route('stores.show', $store))->assertNotFound();
+    }
+
+    public function test_rejected_seller_cannot_open_their_own_store(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $seller = User::factory()->create(['role' => 'buyer']);
+        $this->submitApplication($seller, 'Toko Ditolak');
+        $this->actingAs($admin)->patch(route('admin.users.reject-seller', $seller->refresh()), ['rejection_reason' => 'Data belum lengkap.']);
+
+        $store = SellerProfile::query()->where('user_id', $seller->id)->firstOrFail();
+
+        $this->actingAs($seller)->put(route('seller.store.update'), [
+            'store_name' => 'Toko Ditolak',
+            'phone' => '081200000002',
+            'address' => 'Blok B1 No. 2',
+            'status' => 'open',
+        ])->assertForbidden();
+
+        $this->assertNotSame('open', $store->refresh()->status);
+    }
+
+    public function test_suspended_seller_cannot_reopen_their_store(): void
+    {
+        $seller = User::factory()->create(['role' => 'seller']);
+        SellerProfile::create([
+            'user_id' => $seller->id,
+            'store_name' => 'Toko Ditangguhkan',
+            'phone' => $seller->phone,
+            'address' => 'Blok A1',
+            'status' => 'suspended',
+            'verification_status' => 'approved',
+        ]);
+
+        $this->actingAs($seller)->put(route('seller.store.update'), [
+            'store_name' => 'Toko Ditangguhkan',
+            'phone' => $seller->phone,
+            'address' => 'Blok A1',
+            'status' => 'open',
+        ])->assertForbidden();
+
+        $this->assertSame('suspended', SellerProfile::query()->where('user_id', $seller->id)->firstOrFail()->status);
+    }
+
+    public function test_pending_seller_cannot_publish_products_or_payment_details(): void
+    {
+        $seller = User::factory()->create(['role' => 'seller']);
+        $store = SellerProfile::create([
+            'user_id' => $seller->id,
+            'store_name' => 'Toko Menunggu',
+            'phone' => $seller->phone,
+            'address' => 'Blok A1',
+            'status' => 'closed',
+            'verification_status' => 'pending',
+            'delivery_fee' => 4000,
+        ]);
+
+        $this->actingAs($seller)->post(route('seller.products.store'), [
+            'category_id' => Category::create(['name' => 'Sembako'])->id,
+            'name' => 'Beras Curian',
+            'price' => 50000,
+            'stock' => 5,
+        ])->assertForbidden();
+
+        $this->actingAs($seller)->put(route('seller.shipping.update'), [
+            'delivery_fee' => 5000,
+            'min_order_amount' => 20000,
+            'enable_delivery' => 1,
+        ])->assertForbidden();
+
+        $this->actingAs($seller)->put(route('seller.payment.update'), [
+            'bank_name' => 'BRI',
+            'bank_account_number' => '1234567890',
+        ])->assertForbidden();
+
+        $this->assertDatabaseCount('products', 0);
+        $this->assertDatabaseMissing('seller_payment_settings', ['seller_profile_id' => $store->id]);
+        $this->assertSame(4000, $store->refresh()->delivery_fee);
+    }
+
+    public function test_deactivated_account_cannot_submit_a_seller_application(): void
+    {
+        $seller = User::factory()->create(['role' => 'buyer', 'status' => 'inactive']);
+
+        $this->actingAs($seller)
+            ->post(route('seller.application.store'), [
+                'store_name' => 'Toko dari Akun Nonaktif',
+                'phone' => '081200000002',
+                'address' => 'Blok B1 No. 2',
+            ])
+            ->assertRedirect(route('login'));
+
+        $this->assertDatabaseMissing('seller_profiles', ['user_id' => $seller->id]);
+        $this->assertDatabaseHas('users', ['id' => $seller->id, 'role' => 'buyer', 'status' => 'inactive']);
+    }
+
+    public function test_reactivating_a_seller_does_not_open_an_unverified_store(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $seller = User::factory()->create(['role' => 'seller', 'status' => 'inactive']);
+        $store = SellerProfile::create([
+            'user_id' => $seller->id,
+            'store_name' => 'Toko Menunggu',
+            'phone' => $seller->phone,
+            'address' => 'Blok A1',
+            'status' => 'suspended',
+            'verification_status' => 'pending',
+        ]);
+
+        $this->actingAs($admin)->patch(route('admin.users.status', $seller))->assertRedirect();
+
+        $this->assertDatabaseHas('users', ['id' => $seller->id, 'status' => 'active']);
+        $this->assertSame('closed', $store->refresh()->status);
     }
 
     private function submitApplication(User $user, string $storeName): void

@@ -89,7 +89,14 @@ class AdminUserController extends Controller
             $user->update(['status' => $newStatus]);
 
             if ($user->isSeller() && $user->sellerProfile) {
-                $user->sellerProfile->update(['status' => $newStatus === 'active' ? 'open' : 'suspended']);
+                // Toko hanya dibuka kembali bila verifikasinya sudah disetujui,
+                // agar toko yang ditolak/ditinjau tidak ikut tayang.
+                $user->sellerProfile->update([
+                    'status' => match (true) {
+                        $newStatus === 'active' && $user->sellerProfile->isVerificationApproved() => 'open',
+                        default => $newStatus === 'active' ? 'closed' : 'suspended',
+                    },
+                ]);
             }
         });
 

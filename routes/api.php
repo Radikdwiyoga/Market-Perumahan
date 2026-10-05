@@ -26,7 +26,7 @@ Route::middleware('throttle:api-public')->group(function () {
     Route::get('/stores/{store}', [ProductController::class, 'store'])->name('api.stores.show');
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me'])->name('api.auth.me');
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.auth.logout');
 

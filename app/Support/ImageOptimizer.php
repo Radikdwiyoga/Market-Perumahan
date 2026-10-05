@@ -37,12 +37,25 @@ final class ImageOptimizer
         }
     }
 
+    /**
+     * Batas jumlah piksel sebelum gambar didecode.
+     *
+     * GD mengodekan seluruh buffer gambar ke memori, sehingga gambar kecil
+     * berdimensi sangat besar (dekompresi zip bomb) bisa menghabiskan RAM meski
+     * ukuran filenya cuma beberapa ratus KB.
+     */
+    private const MAX_PIXELS = 40_000_000;
+
     private static function decode(UploadedFile $file): ?GdImage
     {
         $path = $file->getPathname();
         $info = @getimagesize($path);
 
         if ($info === false) {
+            return null;
+        }
+
+        if ($info[0] * $info[1] > self::MAX_PIXELS) {
             return null;
         }
 

@@ -83,9 +83,74 @@ class SellerProductDescriptionAiTest extends TestCase
         ]);
 
         $this->actingAs($seller)
-            ->postJson(route('seller.products.ai-description'), ['existing_image' => $product->image])
+            ->postJson(route('seller.products.ai-description'), ['product_id' => $product->id])
             ->assertOk()
             ->assertJsonPath('description', 'Gula pasir putih.');
+    }
+
+    public function test_seller_cannot_send_another_stores_product_photo_to_the_ai(): void
+    {
+        Storage::fake('public');
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [['content' => ['parts' => [['text' => 'Deskripsi dari nama saja.']]]]],
+            ]),
+        ]);
+
+        $seller = $this->seller();
+        $category = Category::create(['name' => 'Sembako']);
+        Storage::disk('public')->put('products/milik-orang.webp', 'rahasia-toko-lain');
+
+        $otherSeller = User::factory()->create(['role' => 'seller']);
+        $foreignStore = SellerProfile::create([
+            'user_id' => $otherSeller->id,
+            'store_name' => 'Toko Orang Lain',
+            'phone' => $otherSeller->phone,
+            'address' => 'Blok Z9',
+        ]);
+
+        $foreignProduct = Product::create([
+            'seller_profile_id' => $foreignStore->id,
+            'category_id' => $category->id,
+            'name' => 'Produk Orang Lain',
+            'image' => 'products/milik-orang.webp',
+            'price' => 10000,
+            'stock' => 3,
+        ]);
+
+        // `product_id` milik toko lain tidak resolving ke file apa pun, jadi request
+        // ditolak tanpa pernah mengirim foto toko lain ke API AI.
+        $this->actingAs($seller)
+            ->postJson(route('seller.products.ai-description'), [
+                'product_id' => $foreignProduct->id,
+                'name' => 'Kopi Bubuk',
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('image');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_a_free_form_image_path_is_ignored(): void
+    {
+        Storage::fake('public');
+        Http::fake([
+            'generativelanguage.googleapis.com/*' => Http::response([
+                'candidates' => [['content' => ['parts' => [['text' => 'Deskripsi aman.']]]]],
+            ]),
+        ]);
+
+        $seller = $this->seller();
+        Storage::disk('public')->put('products/rahasia.webp', 'rahasia');
+
+        // `existing_image` tidak lagi menjadi input yang dipercaya, sehingga path
+        // bebas diabaikan dan tidak ada foto yang terkirim ke API AI.
+        $this->actingAs($seller)
+            ->postJson(route('seller.products.ai-description'), ['existing_image' => 'products/rahasia.webp'])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('image');
+
+        Http::assertNothingSent();
     }
 
     public function test_ai_markers_are_stripped_from_the_generated_description(): void

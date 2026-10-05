@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\SellerProfile;
 use App\Support\ProductDescriptionGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,11 +24,11 @@ class SellerProductDescriptionAiController extends Controller
     public function store(Request $request): JsonResponse
     {
         abort_unless($request->user()->isSeller(), 403);
-        $request->user()->sellerProfile()->firstOrFail();
+        $store = $request->user()->sellerProfile()->firstOrFail();
 
         $validated = $request->validate([
             'image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'existing_image' => ['nullable', 'string', 'max:255'],
+            'product_id' => ['nullable', 'integer'],
             'name' => ['nullable', 'string', 'max:255'],
             'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')],
         ]);
@@ -38,7 +39,7 @@ class SellerProductDescriptionAiController extends Controller
             ], 503);
         }
 
-        $image = $this->resolveImage($request, $validated);
+        $image = $this->resolveImage($request, $store, $validated);
 
         if ($image === null) {
             return response()->json([
@@ -70,17 +71,28 @@ class SellerProductDescriptionAiController extends Controller
     }
 
     /**
-     * Sumber foto: file baru diunggah, atau foto produk yang sudah tersimpan.
+     * Sumber foto: file baru diunggah, atau foto produk milik toko pemanggil.
+     *
+     * Path foto tidak pernah diterima dari klien. Klien hanya mengirim
+     * `product_id`, yang dicari ulang lewat relasi produk toko pemanggil, sehingga
+     * seller lain tidak bisa menitipkan path bebas untuk membaca foto toko orang
+     * lain di disk `public` lalu mengirimkannya ke API AI.
      *
      * @param  array<string, mixed>  $validated
      */
-    private function resolveImage(Request $request, array $validated): ?UploadedFile
+    private function resolveImage(Request $request, SellerProfile $store, array $validated): ?UploadedFile
     {
         if ($request->hasFile('image')) {
             return $request->file('image');
         }
 
-        $path = $validated['existing_image'] ?? null;
+        $productId = $validated['product_id'] ?? null;
+
+        if ($productId === null) {
+            return null;
+        }
+
+        $path = $store->products()->whereKey($productId)->value('image');
 
         if (! filled($path) || ! Storage::disk('public')->exists($path)) {
             return null;

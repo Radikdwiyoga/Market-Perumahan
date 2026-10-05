@@ -72,7 +72,7 @@
                         @if ($payment->rejection_reason)
                             <p class="mt-3 rounded-lg bg-red-50 p-3 text-xs text-red-700">Pembayaran ditolak: {{ $payment->rejection_reason }}.</p>
                         @endif
-                        @if ($payment->requiresManualVerification())
+                        @if ($payment->isVerifiable())
                             <form action="{{ route('seller.orders.payments.verify', $payment) }}" method="POST" class="mt-4">@csrf @method('PATCH')<button class="rounded-lg bg-emerald-800 px-4 py-2 text-sm font-bold text-white">{{ $payment->method === 'cod' ? 'Terima pembayaran COD' : 'Verifikasi pembayaran' }}</button></form>
                         @endif
                     </div>

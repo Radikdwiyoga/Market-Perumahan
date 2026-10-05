@@ -36,6 +36,7 @@ class SellerProductController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $store = $this->sellerStore();
+        $this->ensureStoreCanOperate($store);
         $validated = $request->validate([
             'category_id' => ['required', 'integer', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('status', 'active'))],
             'name' => ['required', 'string', 'max:255'],
@@ -69,6 +70,7 @@ class SellerProductController extends Controller
     public function update(Request $request, int $product): RedirectResponse
     {
         $store = $this->sellerStore();
+        $this->ensureStoreCanOperate($store);
         $validated = $request->validate([
             'category_id' => ['required', 'integer', Rule::exists('categories', 'id')->where(fn ($query) => $query->where('status', 'active'))],
             'name' => ['required', 'string', 'max:255'],

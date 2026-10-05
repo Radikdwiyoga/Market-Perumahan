@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,7 +18,18 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->throttleApi();
-        $middleware->trustProxies(at: '*');
+
+        // Percaya seluruh proxy membuat `Request::ip()` (dipakai sebagai kunci
+        // rate limiter dan log audit) bisa dipalsukan lewat header
+        // `X-Forwarded-For`. Isi `TRUSTED_PROXIES` dengan daftar proxy produksi
+        // (mis. `10.0.0.1,10.0.0.2`) agar hanya proxy tepercaya yang dipakai.
+        $middleware->trustProxies(at: (string) env('TRUSTED_PROXIES', '*'));
+
+        // Alias, bukan middleware group: `active` harus dijalankan *setelah*
+        // `auth`/`auth:sanctum` supaya `$request->user()` sudah terisi.
+        $middleware->alias([
+            'active' => EnsureUserIsActive::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

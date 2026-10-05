@@ -30,10 +30,10 @@ class AdminOrderController extends Controller
     public function verifyPayment(Payment $payment): RedirectResponse
     {
         $this->ensureAdmin();
-        abort_unless($payment->requiresManualVerification(), 422, 'Pembayaran ini sudah lunas.');
+        abort_unless($payment->isVerifiable(), 422, 'Pembayaran ini sudah lunas atau ditolak.');
 
-        $payment->update(['status' => 'paid', 'paid_at' => now(), 'verified_at' => now()]);
-        $payment->sellerOrder()->update(['payment_status' => 'paid', 'status' => 'processing']);
+        $payment->update(['status' => Payment::STATUS_PAID, 'paid_at' => now(), 'verified_at' => now()]);
+        $payment->sellerOrder()->update(['payment_status' => Payment::STATUS_PAID, 'status' => 'processing']);
         $payment->sellerOrder->order()->update(['status' => 'processing']);
 
         $order = $payment->sellerOrder->order;
@@ -52,15 +52,16 @@ class AdminOrderController extends Controller
     public function rejectPayment(Request $request, Payment $payment): RedirectResponse
     {
         $this->ensureAdmin();
-        abort_unless($payment->requiresManualVerification(), 422, 'Pembayaran ini sudah lunas.');
+        abort_unless($payment->isVerifiable(), 422, 'Pembayaran ini sudah lunas atau ditolak.');
         $validated = $request->validate([
             'rejection_reason' => ['required', 'string', 'max:500'],
         ]);
 
-        $payment->update(['status' => 'failed', 'rejection_reason' => $validated['rejection_reason']]);
-        $payment->sellerOrder()->update(['payment_status' => 'failed']);
+        $payment->update(['status' => Payment::STATUS_FAILED, 'rejection_reason' => $validated['rejection_reason']]);
+        $payment->sellerOrder()->update(['payment_status' => Payment::STATUS_FAILED]);
 
         $order = $payment->sellerOrder->order;
+        $order->refreshStatus();
         AuditLogger::log('PAYMENT_REJECTED', 'Payment', $payment->id, [
             'order_number' => $order->order_number,
             'reason' => $validated['rejection_reason'],

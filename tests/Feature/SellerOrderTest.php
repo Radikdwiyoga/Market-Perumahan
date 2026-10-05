@@ -91,6 +91,81 @@ class SellerOrderTest extends TestCase
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'completed']);
     }
 
+    public function test_seller_cannot_verify_a_payment_that_was_already_rejected(): void
+    {
+        $seller = User::factory()->create(['role' => 'seller']);
+        $buyer = User::factory()->create();
+        $store = SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Warung Warga', 'phone' => $seller->phone, 'address' => 'A1']);
+        $order = Order::create(['order_number' => 'ORD-VERIFY-003', 'buyer_id' => $buyer->id, 'subtotal' => 10000, 'total_amount' => 10000]);
+        $sellerOrder = SellerOrder::create(['order_id' => $order->id, 'seller_profile_id' => $store->id, 'subtotal' => 10000, 'total_amount' => 10000, 'shipping_method' => 'seller_delivery', 'payment_status' => 'failed']);
+        $payment = Payment::create(['order_id' => $order->id, 'seller_order_id' => $sellerOrder->id, 'buyer_id' => $buyer->id, 'seller_profile_id' => $store->id, 'method' => 'bank_transfer', 'amount' => 10000, 'status' => 'failed', 'rejection_reason' => 'Dana tidak masuk.']);
+
+        $this->actingAs($seller)->patch(route('seller.orders.payments.verify', $payment))->assertStatus(422);
+
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'failed']);
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'payment_status' => 'failed', 'status' => 'pending']);
+    }
+
+    public function test_seller_cannot_verify_an_already_paid_payment(): void
+    {
+        $seller = User::factory()->create(['role' => 'seller']);
+        $buyer = User::factory()->create();
+        $store = SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Warung Warga', 'phone' => $seller->phone, 'address' => 'A1']);
+        $order = Order::create(['order_number' => 'ORD-VERIFY-004', 'buyer_id' => $buyer->id, 'subtotal' => 10000, 'total_amount' => 10000]);
+        $sellerOrder = SellerOrder::create(['order_id' => $order->id, 'seller_profile_id' => $store->id, 'subtotal' => 10000, 'total_amount' => 10000, 'shipping_method' => 'seller_delivery', 'payment_status' => 'paid']);
+        $payment = Payment::create(['order_id' => $order->id, 'seller_order_id' => $sellerOrder->id, 'buyer_id' => $buyer->id, 'seller_profile_id' => $store->id, 'method' => 'cod', 'amount' => 10000, 'status' => 'paid', 'paid_at' => now()]);
+
+        $this->actingAs($seller)->patch(route('seller.orders.payments.verify', $payment))->assertStatus(422);
+
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'paid']);
+    }
+
+    public function test_pickup_verification_does_not_mark_a_bank_transfer_as_paid(): void
+    {
+        $seller = User::factory()->create(['role' => 'seller']);
+        $buyer = User::factory()->create();
+        $store = SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Warung Warga', 'phone' => $seller->phone, 'address' => 'A1']);
+        $order = Order::create(['order_number' => 'ORD-PICKUP-003', 'buyer_id' => $buyer->id, 'subtotal' => 20000, 'total_amount' => 20000]);
+        $sellerOrder = SellerOrder::create([
+            'order_id' => $order->id,
+            'seller_profile_id' => $store->id,
+            'subtotal' => 20000,
+            'total_amount' => 20000,
+            'shipping_method' => 'store_pickup',
+            'shipping_status' => 'ready',
+            'pickup_code' => '482915',
+        ]);
+        $payment = Payment::create(['order_id' => $order->id, 'seller_order_id' => $sellerOrder->id, 'buyer_id' => $buyer->id, 'seller_profile_id' => $store->id, 'method' => 'bank_transfer', 'amount' => 20000, 'status' => 'pending']);
+
+        $this->actingAs($seller)->post(route('seller.orders.pickup', $sellerOrder), ['pickup_code' => '482915'])->assertRedirect();
+
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'completed', 'payment_status' => 'pending']);
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'pending']);
+    }
+
+    public function test_pickup_verification_is_rejected_for_a_cancelled_order(): void
+    {
+        $seller = User::factory()->create(['role' => 'seller']);
+        $buyer = User::factory()->create();
+        $store = SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Warung Warga', 'phone' => $seller->phone, 'address' => 'A1']);
+        $order = Order::create(['order_number' => 'ORD-PICKUP-004', 'buyer_id' => $buyer->id, 'subtotal' => 20000, 'total_amount' => 20000]);
+        $sellerOrder = SellerOrder::create([
+            'order_id' => $order->id,
+            'seller_profile_id' => $store->id,
+            'subtotal' => 20000,
+            'total_amount' => 20000,
+            'shipping_method' => 'store_pickup',
+            'shipping_status' => 'ready',
+            'status' => 'cancelled',
+            'payment_status' => 'failed',
+            'pickup_code' => '482915',
+        ]);
+
+        $this->actingAs($seller)->post(route('seller.orders.pickup', $sellerOrder), ['pickup_code' => '482915'])->assertStatus(422);
+
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'cancelled', 'shipping_status' => 'ready']);
+    }
+
     public function test_seller_cannot_verify_with_wrong_pickup_code(): void
     {
         $seller = User::factory()->create(['role' => 'seller']);

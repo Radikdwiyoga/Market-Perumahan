@@ -110,6 +110,49 @@ class SellerReportTest extends TestCase
         $this->assertStringContainsString('Metode Pembayaran', $response->streamedContent());
     }
 
+    public function test_seller_report_csv_neutralises_formula_injection(): void
+    {
+        $buyer = User::factory()->create();
+        $seller = User::factory()->create(['role' => 'seller']);
+        $store = SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Toko Formula', 'phone' => $seller->phone, 'address' => 'A1']);
+        $category = Category::create(['name' => 'Makanan']);
+        $product = Product::create(['seller_profile_id' => $store->id, 'category_id' => $category->id, 'name' => 'Beras', 'price' => 50000, 'stock' => 10]);
+        $order = Order::create(['order_number' => 'ORD-SRPT-CSV-001', 'buyer_id' => $buyer->id, 'subtotal' => 30000, 'total_amount' => 30000]);
+        $sellerOrder = SellerOrder::create([
+            'order_id' => $order->id,
+            'seller_profile_id' => $store->id,
+            'subtotal' => 30000,
+            'total_amount' => 30000,
+            'shipping_method' => 'seller_delivery',
+            'payment_status' => Payment::STATUS_PAID,
+        ]);
+        OrderItem::create([
+            'order_id' => $order->id,
+            'seller_profile_id' => $store->id,
+            'product_id' => $product->id,
+            'product_name' => '=HYPERLINK("http://penyerang.test","Klik")',
+            'price' => 30000,
+            'quantity' => 1,
+            'subtotal' => 30000,
+        ]);
+        Payment::create([
+            'order_id' => $order->id,
+            'seller_order_id' => $sellerOrder->id,
+            'buyer_id' => $buyer->id,
+            'seller_profile_id' => $store->id,
+            'method' => Payment::METHOD_COD,
+            'amount' => 30000,
+            'status' => Payment::STATUS_PAID,
+            'paid_at' => now(),
+        ]);
+
+        $csv = $this->actingAs($seller)->get(route('seller.reports.export'))->assertOk()->streamedContent();
+
+        $this->assertStringContainsString('\'=HYPERLINK', $csv);
+        $this->assertStringNotContainsString(',=HYPERLINK', $csv);
+        $this->assertStringNotContainsString("\n=HYPERLINK", $csv);
+    }
+
     public function test_buyer_cannot_access_seller_report(): void
     {
         $buyer = User::factory()->create();

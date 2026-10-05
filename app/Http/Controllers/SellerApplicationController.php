@@ -58,7 +58,10 @@ class SellerApplicationController extends Controller
 
             $store->save();
 
-            $user->update(['role' => 'seller', 'status' => 'active']);
+            // Role naik ke `seller` agar bisa masuk dashboard toko, tetapi `status`
+            // milik pengelola: akun yang dinonaktifkan tidak diaktifkan ulang
+            // lewat jalur ini.
+            $user->update(['role' => 'seller']);
 
             return $store;
         });

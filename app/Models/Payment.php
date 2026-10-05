@@ -50,6 +50,21 @@ class Payment extends Model
      */
     public const METHOD_COD = 'cod';
 
+    /**
+     * Menunggu verifikasi manual penjual/admin.
+     */
+    public const STATUS_PENDING = 'pending';
+
+    /**
+     * Sudah lunas: keputusan final, tidak bisa diubah.
+     */
+    public const STATUS_PAID = 'paid';
+
+    /**
+     * Ditolak atau kedaluwarsa: butuh pembayaran baru dari pembeli.
+     */
+    public const STATUS_FAILED = 'failed';
+
     protected function casts(): array
     {
         return ['amount' => 'integer', 'paid_at' => 'datetime', 'verified_at' => 'datetime'];
@@ -61,14 +76,16 @@ class Payment extends Model
     }
 
     /**
-     * Pembayaran perlu diverifikasi manual oleh penjual/admin.
+     * Pembayaran masih menunggu keputusan manual penjual/admin.
      *
-     * Transfer bank dan QRIS perlu dicek bukti unggahannya; COD dicek saat
-     * barang diterima. Semuanya belum lunas sampai diverifikasi.
+     * Hanya status `pending` yang boleh diverifikasi atau ditolak. `paid` sudah
+     * lunas dan `failed` adalah keputusan final (ditolak admin atau kedaluwarsa),
+     * sehingga tidak boleh diaktifkan kembali oleh penjual. Setelah ditolak,
+     * pembeli harus membuat pembayaran baru lewat endpoint pembayaran order.
      */
-    public function requiresManualVerification(): bool
+    public function isVerifiable(): bool
     {
-        return $this->status !== 'paid';
+        return $this->status === self::STATUS_PENDING;
     }
 
     /**

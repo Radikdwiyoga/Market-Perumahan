@@ -45,5 +45,17 @@ class AppServiceProvider extends ServiceProvider
 
         // Generate deskripsi AI memakai kuota API berbayar, jadi limiter-nya lebih ketat.
         RateLimiter::for('ai-description', fn (Request $request) => Limit::perMinute((int) config('marketplace.ai.limit_per_minute', 6))->by($request->user()?->id ?: $request->ip()));
+
+        // Endpoint web login/register tidak pernah memakai limiter API, sehingga
+        // tanpa ini login bisa ditebak-tebak tanpa batas (credential stuffing).
+        RateLimiter::for('login', fn (Request $request) => [
+            Limit::perMinute(5)->by('login-ip:'.$request->ip()),
+            Limit::perMinute(10)->by('login-email:'.mb_strtolower((string) $request->input('email')).'|'.$request->ip()),
+        ]);
+
+        RateLimiter::for('register', fn (Request $request) => [
+            Limit::perMinute(3)->by('register-ip:'.$request->ip()),
+            Limit::perMinute(20)->by('register-global'),
+        ]);
     }
 }

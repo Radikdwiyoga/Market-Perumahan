@@ -42,4 +42,26 @@ class ImageOptimizerTest extends TestCase
         Storage::disk('public')->assertExists($path);
         $this->assertStringNotContainsString('.webp', $path);
     }
+
+    public function test_store_skips_images_beyond_the_pixel_budget(): void
+    {
+        Storage::fake('public');
+        $temp = tempnam(sys_get_temp_dir(), 'besar').'.png';
+
+        // Header PNG sah yang mendeklarasikan 9000x9000 (81 MP): cukup untuk
+        // membuat GD kehabisan memori. Isi gambarnya sengaja tidak ada, jadi
+        // file ini hanya bisa lolos bila batas piksel diperiksa sebelum decode.
+        $ihdr = pack('NN', 9000, 9000)."\x08\x02\x00\x00\x00";
+        $chunk = 'IHDR'.$ihdr;
+        file_put_contents($temp, "\x89PNG\r\n\x1a\n".pack('N', 13).$chunk.pack('N', crc32($chunk)));
+
+        $info = getimagesize($temp);
+        $this->assertIsArray($info, 'Header gambar harus terbaca agar batas piksel yang diuji.');
+        $this->assertSame(81_000_000, $info[0] * $info[1]);
+
+        $path = ImageOptimizer::store(new UploadedFile($temp, 'besar.png', 'image/png', null, true), 'products');
+
+        Storage::disk('public')->assertExists($path);
+        $this->assertStringNotContainsString('.webp', $path, 'Gambar melebihi batas piksel disimpan apa adanya, tanpa didekode GD.');
+    }
 }

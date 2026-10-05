@@ -2,11 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\SellerOrder;
 use App\Models\UserNotification;
 use App\Support\AuditLogger;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class CancelExpiredOrders extends Command
 {
@@ -25,23 +27,42 @@ class CancelExpiredOrders extends Command
             ->get();
 
         foreach ($expired as $sellerOrder) {
-            $order = $sellerOrder->order;
+            $cancelled = DB::transaction(function () use ($sellerOrder): ?Order {
+                $sellerOrder->refresh();
 
-            foreach ($order->items as $item) {
-                Product::query()->whereKey($item->product_id)->increment('stock', $item->quantity);
+                // Sudah dibayar atau dibatalkan oleh proses lain (mis. verifikasi
+                // pembayaran) di antara SELECT dan UPDATE: jangan sentuh lagi.
+                if ($sellerOrder->status !== 'pending' || $sellerOrder->payment_status !== 'pending') {
+                    return null;
+                }
+
+                $order = $sellerOrder->order;
+
+                // Hanya barang milik toko yang sub-order ini kedaluwarsa.
+                // Memulihkan seluruh `$order->items` akan mengembalikan stok
+                // toko lain pada order multi-seller.
+                foreach ($order->items->where('seller_profile_id', $sellerOrder->seller_profile_id) as $item) {
+                    Product::query()->whereKey($item->product_id)->increment('stock', $item->quantity);
+                }
+
+                $sellerOrder->payments()->update(['status' => 'failed']);
+                $sellerOrder->update(['payment_status' => 'failed', 'status' => 'cancelled']);
+                $order->refreshStatus();
+
+                return $order;
+            });
+
+            if ($cancelled === null) {
+                continue;
             }
 
-            $sellerOrder->payments()->update(['status' => 'failed']);
-            $sellerOrder->update(['payment_status' => 'failed', 'status' => 'cancelled']);
-            $order->refreshStatus();
-
-            $orderNumber = $order->order_number;
-            AuditLogger::log('ORDER_CANCELLED', 'SellerOrder', $sellerOrder->id, ['order_number' => $orderNumber, 'reason' => 'payment_expired']);
-            UserNotification::send($order->buyer_id, 'Pesanan dibatalkan', "Pesanan {$orderNumber} dibatalkan karena pembayaran melebihi batas waktu.", 'order_cancelled');
+            $orderNumber = $cancelled->order_number;
+            AuditLogger::log('ORDER_CANCELLED', 'SellerOrder', $sellerOrder->id, ['order_number' => $orderNumber, 'reason' => 'payment_expired'], 'system:orders:cancel-expired');
+            UserNotification::send($cancelled->buyer_id, 'Pesanan dibatalkan', "Pesanan {$orderNumber} dibatalkan karena pembayaran melebihi batas waktu.", 'order_cancelled');
             UserNotification::send($sellerOrder->sellerProfile->user_id, 'Pesanan dibatalkan', "Pesanan {$orderNumber} dibatalkan karena pembayaran melewati batas waktu.", 'order_cancelled');
         }
 
-        $this->info("{$expired->count()} sub-order kedaluwarsa dibatalkan.");
+        $this->info("{$expired->count()} sub-order kedaluwarsa diproses.");
 
         return self::SUCCESS;
     }

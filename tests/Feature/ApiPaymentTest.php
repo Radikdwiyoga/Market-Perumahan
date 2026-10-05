@@ -242,6 +242,80 @@ class ApiPaymentTest extends TestCase
         $this->assertDatabaseHas('user_notifications', ['user_id' => $buyer->id, 'type' => 'payment_rejected']);
     }
 
+    public function test_buyer_cannot_restart_a_settled_payment(): void
+    {
+        $buyer = User::factory()->create();
+        $store = $this->seller('Warung Warga');
+        $order = $this->order('ORD-PAY-011', $buyer->id);
+        $sellerOrder = $this->sellerOrder($order, $store, 'seller_delivery');
+        $payment = $this->payment($order, $sellerOrder, $buyer, Payment::METHOD_BANK_TRANSFER, Payment::STATUS_PAID);
+        $sellerOrder->update(['payment_status' => Payment::STATUS_PAID]);
+
+        $this->actingAs($buyer, 'sanctum')
+            ->postJson('/api/orders/'.$order->id.'/payment', [
+                'seller_order_id' => $sellerOrder->id,
+                'method' => Payment::METHOD_COD,
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Pembayaran untuk sub-order ini sudah lunas.');
+
+        $this->assertDatabaseHas('payments', [
+            'id' => $payment->id,
+            'method' => Payment::METHOD_BANK_TRANSFER,
+            'status' => 'paid',
+        ]);
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'payment_status' => 'paid']);
+    }
+
+    public function test_seller_cannot_reject_an_already_paid_payment(): void
+    {
+        $buyer = User::factory()->create();
+        $store = $this->seller('Warung Warga');
+        $order = $this->order('ORD-PAY-012', $buyer->id);
+        $sellerOrder = $this->sellerOrder($order, $store, 'seller_delivery');
+        $payment = $this->payment($order, $sellerOrder, $buyer, Payment::METHOD_COD, Payment::STATUS_PAID);
+        $sellerOrder->update(['payment_status' => Payment::STATUS_PAID]);
+
+        $this->actingAs($store, 'sanctum')
+            ->postJson('/api/payments/'.$payment->id.'/reject', ['rejection_reason' => 'Uang tidak masuk'])
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'paid', 'rejection_reason' => null]);
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'payment_status' => 'paid']);
+    }
+
+    public function test_seller_cannot_verify_a_payment_that_was_already_rejected(): void
+    {
+        $buyer = User::factory()->create();
+        $store = $this->seller('Warung Warga');
+        $order = $this->order('ORD-PAY-013', $buyer->id);
+        $sellerOrder = $this->sellerOrder($order, $store, 'seller_delivery');
+        $payment = $this->payment($order, $sellerOrder, $buyer, Payment::METHOD_BANK_TRANSFER, Payment::STATUS_FAILED);
+
+        $this->actingAs($store, 'sanctum')->postJson('/api/payments/'.$payment->id.'/verify')->assertStatus(422);
+
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'failed']);
+    }
+
+    public function test_restarting_a_payment_resets_the_expiry_window(): void
+    {
+        $buyer = User::factory()->create();
+        $store = $this->seller('Warung Warga');
+        $order = $this->order('ORD-PAY-014', $buyer->id);
+        $sellerOrder = $this->sellerOrder($order, $store, 'seller_delivery');
+        $sellerOrder->update(['payment_status' => Payment::STATUS_FAILED, 'payment_due_at' => now()->subMinute()]);
+
+        $this->actingAs($buyer, 'sanctum')
+            ->postJson('/api/orders/'.$order->id.'/payment', [
+                'seller_order_id' => $sellerOrder->id,
+                'method' => Payment::METHOD_BANK_TRANSFER,
+            ])
+            ->assertCreated();
+
+        $this->assertTrue($sellerOrder->refresh()->payment_due_at->isFuture());
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'pending', 'payment_status' => 'pending']);
+    }
+
     public function test_checkout_via_api_can_use_bank_transfer(): void
     {
         $buyer = User::factory()->create();

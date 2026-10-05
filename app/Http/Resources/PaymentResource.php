@@ -29,7 +29,9 @@ class PaymentResource extends JsonResource
             'method_label' => $this->methodLabel(),
             'amount' => $this->amount,
             'status' => $this->status,
-            'requires_manual_verification' => $this->requiresManualVerification(),
+            // `true` hanya saat masih `pending`: pembayaran yang sudah lunas atau
+            // sudah ditolak tidak lagi menunggu keputusan manual.
+            'requires_manual_verification' => $this->isVerifiable(),
             'requires_proof' => $this->requiresProof(),
             'proof_image_url' => $this->proof_image ? Storage::disk('public')->url($this->proof_image) : null,
             'qris_image_snapshot_url' => $this->qris_image_snapshot ? Storage::disk('public')->url($this->qris_image_snapshot) : null,

@@ -10,7 +10,7 @@
 //   data-ai-trigger             tombol "Buat dengan AI"
 //   data-ai-status               area pesan status/error
 //   data-ai-input-image         input file foto (opsional bila sudah ada foto lama)
-//   data-ai-existing-image      path foto tersimpan (produk yang sudah ada)
+//   data-ai-existing-product    id produk yang fotonya tersimpan (opsional)
 //   data-ai-field-name          input nama produk
 //   data-ai-field-category      select kategori
 //   data-ai-field-description   textarea deskripsi
@@ -26,7 +26,7 @@
     const trigger = root.querySelector('[data-ai-trigger]');
     const status = root.querySelector('[data-ai-status]');
     const imageInput = root.querySelector('[data-ai-input-image]');
-    const existingImage = root.dataset.aiExistingImage || '';
+    const existingProduct = root.dataset.aiExistingProduct || '';
     const nameField = root.querySelector('[data-ai-field-name]');
     const categoryField = root.querySelector('[data-ai-field-category]');
     const descriptionField = root.querySelector('[data-ai-field-description]');
@@ -83,8 +83,8 @@
             form.append('image', imageInput.files[0]);
         }
 
-        if (existingImage && !hasNewImage()) {
-            form.append('existing_image', existingImage);
+        if (existingProduct && !hasNewImage()) {
+            form.append('product_id', existingProduct);
         }
 
         if (nameField?.value.trim()) {

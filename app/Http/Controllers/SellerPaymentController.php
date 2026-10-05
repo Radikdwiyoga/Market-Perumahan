@@ -24,6 +24,7 @@ class SellerPaymentController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $store = $this->sellerStore();
+        $this->ensureStoreCanOperate($store);
         $setting = $store->paymentSetting ?? new SellerPaymentSetting(['seller_profile_id' => $store->id]);
         $validated = $request->validate([
             'bank_name' => ['nullable', 'string', 'max:100'],

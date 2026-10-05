@@ -28,7 +28,6 @@ class SellerStoreController extends Controller
             'open_time' => ['nullable', 'date_format:H:i'],
             'close_time' => ['nullable', 'date_format:H:i', 'after:open_time'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
-            'status' => ['required', 'in:open,closed'],
         ]);
 
         if ($request->hasFile('image')) {
@@ -37,6 +36,19 @@ class SellerStoreController extends Controller
             if ($store->image) {
                 Storage::disk('public')->delete($store->image);
             }
+        }
+
+        // Status toko hanya boleh diubah seller yang tokonya sudah terverifikasi,
+        // sehingga seller tidak bisa membuka sendiri toko yang masih ditinjau
+        // atau yang ditangguhkan pengelola.
+        if ($request->has('status')) {
+            $status = $request->validate(['status' => ['required', 'in:open,closed']])['status'];
+
+            if ($status === 'open') {
+                $this->ensureStoreCanOperate($store);
+            }
+
+            $validated['status'] = $status;
         }
 
         $store->update($validated);

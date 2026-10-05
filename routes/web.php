@@ -38,12 +38,14 @@ Route::get('/stores/{store}', [StoreController::class, 'show'])->name('stores.sh
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 });
 
-Route::middleware('auth')->group(function () {
+// `active` arresting akun yang dinonaktifkan pengelola; harus setelah `auth`
+// supaya `$request->user()` sudah terisi.
+Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');

@@ -22,6 +22,7 @@ class SellerPaymentController extends Controller
     public function update(Request $request): JsonResponse
     {
         $store = $this->sellerStore();
+        $this->ensureStoreCanOperate($store);
         $setting = $store->paymentSetting ?? new SellerPaymentSetting(['seller_profile_id' => $store->id]);
         $validated = $request->validate([
             'bank_name' => ['nullable', 'string', 'max:100'],
@@ -43,6 +44,7 @@ class SellerPaymentController extends Controller
         ]);
 
         $store = $this->sellerStore();
+        $this->ensureStoreCanOperate($store);
         $setting = $store->paymentSetting ?? new SellerPaymentSetting(['seller_profile_id' => $store->id]);
 
         if ($setting->qris_image) {

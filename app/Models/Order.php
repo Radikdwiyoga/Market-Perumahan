@@ -62,9 +62,12 @@ class Order extends Model
         $this->load('sellerOrders');
 
         $status = match (true) {
-            $this->sellerOrders->every(fn (SellerOrder $item): bool => $item->status === 'completed') => 'completed',
+            $this->sellerOrders->isEmpty() => 'pending',
             $this->sellerOrders->every(fn (SellerOrder $item): bool => $item->status === 'cancelled') => 'cancelled',
-            $this->sellerOrders->contains(fn (SellerOrder $item): bool => $item->status === 'processing') => 'processing',
+            // Semua sub-order selesai: baik diterima pembeli maupun dibatalkan,
+            // tidak ada lagi yang bisa berjalan.
+            $this->sellerOrders->every(fn (SellerOrder $item): bool => in_array($item->status, ['completed', 'cancelled'], true)) => 'completed',
+            $this->sellerOrders->contains(fn (SellerOrder $item): bool => in_array($item->status, ['completed', 'processing'], true)) => 'processing',
             default => 'pending',
         };
 

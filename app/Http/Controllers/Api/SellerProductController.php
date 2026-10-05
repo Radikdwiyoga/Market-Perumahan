@@ -38,6 +38,7 @@ class SellerProductController extends Controller
     public function store(Request $request): JsonResponse
     {
         $store = $this->sellerStore($request);
+        $this->ensureStoreCanOperate($store);
         $validated = $this->validated($request);
 
         if ($request->hasFile('image')) {
@@ -58,6 +59,7 @@ class SellerProductController extends Controller
     public function update(Request $request, int $product): ProductResource
     {
         $store = $this->sellerStore($request);
+        $this->ensureStoreCanOperate($store);
         $product = $store->products()->findOrFail($product);
         $validated = $this->validated($request);
 

@@ -42,6 +42,11 @@ class PaymentController extends Controller
             'seller_profile_id' => $sellerOrder->seller_profile_id,
         ]);
 
+        // Pembayaran yang sudah lunas bersifat final: pembeli tidak boleh
+        // mengulanginya untuk mengosongkan bukti, mengganti metode, atau
+        // membatalkan verifikasi yang sudah dilakukan penjual/admin.
+        abort_if($payment->status === Payment::STATUS_PAID, 422, 'Pembayaran untuk sub-order ini sudah lunas.');
+
         // QRIS memerlukan gambar QRIS toko; pakai snapshot agar histori tetap utuh.
         $qrisSnapshot = null;
         if ($validated['method'] === Payment::METHOD_QRIS) {
@@ -50,10 +55,14 @@ class PaymentController extends Controller
             $qrisSnapshot = $qrisImage;
         }
 
+        if ($payment->proof_image) {
+            Storage::disk('public')->delete($payment->proof_image);
+        }
+
         $payment->fill([
             'method' => $validated['method'],
             'amount' => $sellerOrder->total_amount,
-            'status' => 'pending',
+            'status' => Payment::STATUS_PENDING,
             'proof_image' => null,
             'qris_image_snapshot' => $qrisSnapshot,
             'rejection_reason' => null,
@@ -63,8 +72,12 @@ class PaymentController extends Controller
         $payment->save();
 
         $sellerOrder->update([
-            'payment_status' => 'pending',
-            'payment_due_at' => null,
+            'payment_status' => Payment::STATUS_PENDING,
+            // Batas bayar selalu diset ulang agar `orders:cancel-expired` tetap
+            // bisa membatalkan sub-order yang tidak pernah dibayar.
+            'payment_due_at' => $validated['method'] === Payment::METHOD_COD
+                ? null
+                : now()->addMinutes((int) config('marketplace.payment_expiry_minutes', 15)),
         ]);
         $order->refreshStatus();
 
@@ -111,10 +124,14 @@ class PaymentController extends Controller
     public function verify(Request $request, Payment $payment): PaymentResource
     {
         $this->authorizeVerify($request, $payment);
-        abort_unless($payment->requiresManualVerification(), 422, 'Pembayaran ini sudah lunas.');
 
-        $payment->update(['status' => 'paid', 'paid_at' => now(), 'verified_at' => now()]);
-        $payment->sellerOrder()->update(['payment_status' => 'paid', 'status' => 'processing']);
+        // Hanya pembayaran `pending` yang boleh diputuskan. Yang sudah lunas
+        // bersifat final, dan yang ditolak (admin/kedaluwarsa) tidak boleh
+        // diaktifkan kembali: pembeli harus membuat pembayaran baru.
+        abort_unless($payment->isVerifiable(), 422, 'Pembayaran ini sudah lunas atau ditolak.');
+
+        $payment->update(['status' => Payment::STATUS_PAID, 'paid_at' => now(), 'verified_at' => now()]);
+        $payment->sellerOrder()->update(['payment_status' => Payment::STATUS_PAID, 'status' => 'processing']);
         $payment->sellerOrder->order->refreshStatus();
 
         $order = $payment->sellerOrder->order;
@@ -137,15 +154,17 @@ class PaymentController extends Controller
     public function reject(Request $request, Payment $payment): JsonResponse
     {
         $this->authorizeVerify($request, $payment);
+        abort_unless($payment->isVerifiable(), 422, 'Pembayaran ini sudah lunas atau ditolak.');
 
         $validated = $request->validate([
             'rejection_reason' => ['required', 'string', 'max:500'],
         ]);
 
-        $payment->update(['status' => 'failed', 'rejection_reason' => $validated['rejection_reason']]);
-        $payment->sellerOrder()->update(['payment_status' => 'failed']);
+        $payment->update(['status' => Payment::STATUS_FAILED, 'rejection_reason' => $validated['rejection_reason']]);
+        $payment->sellerOrder()->update(['payment_status' => Payment::STATUS_FAILED]);
 
         $order = $payment->sellerOrder->order;
+        $order->refreshStatus();
         AuditLogger::log('PAYMENT_REJECTED', 'Payment', $payment->id, [
             'order_number' => $order->order_number,
             'reason' => $validated['rejection_reason'],

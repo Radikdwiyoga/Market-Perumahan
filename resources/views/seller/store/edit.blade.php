@@ -31,7 +31,13 @@
                     <span class="mt-1 block text-xs text-slate-400">JPG, PNG, atau WebP maksimal 5 MB.</span>
                 </label>
                 <label class="block text-sm font-semibold">Deskripsi<textarea name="description" rows="4" class="mt-2 w-full rounded-lg border-slate-300">{{ old('description', $store->description) }}</textarea></label>
-                <label class="block text-sm font-semibold">Status toko<select name="status" class="mt-2 w-full rounded-lg border-slate-300"><option value="open" @selected(old('status', $store->status) === 'open')>Buka</option><option value="closed" @selected(old('status', $store->status) === 'closed')>Tutup sementara</option></select></label>
+                @if ($store->isVerificationApproved() && $store->status !== 'suspended')
+                    <label class="block text-sm font-semibold">Status toko<select name="status" class="mt-2 w-full rounded-lg border-slate-300"><option value="open" @selected(old('status', $store->status) === 'open')>Buka</option><option value="closed" @selected(old('status', $store->status) === 'closed')>Tutup sementara</option></select></label>
+                @else
+                    <div class="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
+                        Status toko dikelola pengelola. {{ $store->status === 'suspended' ? 'Toko Anda sedang ditangguhkan.' : 'Toko Anda belum diverifikasi, sehingga belum bisa dibuka.' }}
+                    </div>
+                @endif
                 <button class="w-full rounded-xl bg-emerald-800 px-5 py-3 font-bold text-white hover:bg-emerald-900">Simpan pengaturan</button>
             </form>
         </section>
