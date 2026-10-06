@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
 </head>
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <main class="mx-auto max-w-2xl px-6 py-10">
-        <a href="{{ route('seller.products.index') }}" class="text-sm font-bold text-forest-700">â† Kembali ke produk</a>
+        <a href="{{ route('seller.products.index') }}" class="text-sm font-bold text-forest-700">&larr; Kembali ke produk</a>
         <section class="mt-5 rounded-2xl bg-warm-white p-6 shadow-soft sm:p-8">
             <p class="text-sm font-bold uppercase tracking-[0.2em] text-forest-700">Kelola toko</p><h1 class="mt-2 text-3xl font-black">Tambah produk</h1><p class="mt-2 text-sage-500">Isi informasi produk yang akan tampil di katalog warga.</p>
             @if ($errors->any())<div class="mt-6 rounded-lg bg-red-50 p-4 text-sm text-red-700"><ul class="list-disc space-y-1 pl-5">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif

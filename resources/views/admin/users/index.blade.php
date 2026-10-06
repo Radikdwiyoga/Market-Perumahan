@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -38,13 +38,13 @@
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <h2 class="font-bold">{{ $user->name }}</h2>
-                        <p class="mt-1 text-sm text-sage-500">{{ $user->email ?: $user->phone }} Â· {{ ucfirst($user->role) }}</p>
+                        <p class="mt-1 text-sm text-sage-500">{{ $user->email ?: $user->phone }} &middot; {{ ucfirst($user->role) }}</p>
                         @if ($user->isSeller() && $user->sellerProfile)
                             <p class="mt-1 text-sm text-forest-700">Toko: {{ $user->sellerProfile->store_name }}</p>
                             <p class="mt-1 text-xs text-sage-500">
                                 Diajukan {{ $user->sellerProfile->submitted_at?->format('d M Y H:i') ?? '-' }}
                                 @if ($user->sellerProfile->verified_at)
-                                    Â· Ditinjau {{ $user->sellerProfile->verified_at->format('d M Y') }}
+                                    &middot; Ditinjau {{ $user->sellerProfile->verified_at->format('d M Y') }}
                                     @if ($user->sellerProfile->verifier)
                                         oleh {{ $user->sellerProfile->verifier->name }}
                                     @endif

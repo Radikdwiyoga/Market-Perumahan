@@ -52,6 +52,31 @@ class SellerOrder extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function canBeFulfilled(): bool
+    {
+        $payment = $this->payments()->latest('id')->first();
+
+        return $payment !== null
+            && ($payment->status === Payment::STATUS_PAID
+                || ($payment->method === Payment::METHOD_COD && $payment->status === Payment::STATUS_PENDING));
+    }
+
+    public function settleCodPayment(): void
+    {
+        $payment = $this->payments()->latest('id')->first();
+
+        if ($payment?->method !== Payment::METHOD_COD || $payment->status !== Payment::STATUS_PENDING) {
+            return;
+        }
+
+        $payment->update([
+            'status' => Payment::STATUS_PAID,
+            'paid_at' => now(),
+            'verified_at' => now(),
+        ]);
+        $this->update(['payment_status' => Payment::STATUS_PAID]);
+    }
+
     public function shipment(): HasMany
     {
         return $this->hasMany(Shipment::class);

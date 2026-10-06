@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -25,14 +25,14 @@
             </div>
             <p class="mt-5 text-3xl font-black">Rp{{ number_format($sellerOrder->total_amount, 0, ',', '.') }}</p>
             <p class="mt-2 text-sm text-forest-200">
-                Subtotal Rp{{ number_format($sellerOrder->subtotal, 0, ',', '.') }} Â· Ongkos kirim Rp{{ number_format($sellerOrder->shipping_fee, 0, ',', '.') }} Â·
+                Subtotal Rp{{ number_format($sellerOrder->subtotal, 0, ',', '.') }} &middot; Ongkos kirim Rp{{ number_format($sellerOrder->shipping_fee, 0, ',', '.') }} &middot;
                 {{ $sellerOrder->shipping_method === 'seller_delivery' ? 'Diantar oleh penjual' : 'Ambil sendiri di toko' }}
             </p>
         </section>
         <section class="mt-6 rounded-2xl bg-warm-white p-6 shadow-soft">
             <h2 class="text-lg font-black">Pembeli</h2>
             <p class="mt-2 font-bold">{{ $sellerOrder->order->buyer->name }}</p>
-            <p class="mt-1 text-sm text-sage-600">{{ $sellerOrder->order->buyer->phone }} Â· {{ $sellerOrder->order->buyer->address }}, Blok {{ $sellerOrder->order->buyer->block }} No. {{ $sellerOrder->order->buyer->house_number }}</p>
+            <p class="mt-1 text-sm text-sage-600">{{ $sellerOrder->order->buyer->phone }} &middot; {{ $sellerOrder->order->buyer->address }}, Blok {{ $sellerOrder->order->buyer->block }} No. {{ $sellerOrder->order->buyer->house_number }}</p>
             <p class="mt-3 text-sm text-sage-600">
                 {{ $sellerOrder->shipping_method === 'seller_delivery' ? 'Dikirim ke' : 'Lokasi pengambilan' }}:
                 {{ $sellerOrder->shipment->first()?->address ?? $store->address }}
@@ -63,7 +63,7 @@
                 @forelse ($sellerOrder->payments as $payment)
                     <div class="rounded-xl border border-warm-200 p-4">
                         <div class="flex flex-wrap items-center justify-between gap-3">
-                            <p class="text-sm font-bold">{{ $payment->methodLabel() }} Â· Rp{{ number_format($payment->amount, 0, ',', '.') }}</p>
+                            <p class="text-sm font-bold">{{ $payment->methodLabel() }} &middot; Rp{{ number_format($payment->amount, 0, ',', '.') }}</p>
                             <span class="rounded-full px-3 py-1 text-xs font-bold {{ $payment->status === 'paid' ? 'bg-forest-100 text-forest-700' : ($payment->status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800') }}">{{ ucfirst($payment->status) }}</span>
                         </div>
                         @if ($payment->proof_image)
@@ -72,7 +72,7 @@
                         @if ($payment->rejection_reason)
                             <p class="mt-3 rounded-lg bg-red-50 p-3 text-xs text-red-700">Pembayaran ditolak: {{ $payment->rejection_reason }}.</p>
                         @endif
-                        @if ($payment->isVerifiable())
+                        @if ($payment->isVerifiable() && $payment->hasRequiredProof())
                             <form action="{{ route('seller.orders.payments.verify', $payment) }}" method="POST" class="mt-4">@csrf @method('PATCH')<button class="rounded-lg bg-forest-700 px-4 py-2 text-sm font-bold text-white">{{ $payment->method === 'cod' ? 'Terima pembayaran COD' : 'Verifikasi pembayaran' }}</button></form>
                         @endif
                     </div>

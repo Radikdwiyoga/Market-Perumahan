@@ -53,6 +53,7 @@ class SellerOrderController extends Controller
     {
         $this->ensureOwnOrder($request, $sellerOrder);
         abort_if($sellerOrder->status !== 'pending', 422, 'Order tidak dalam status menunggu.');
+        abort_unless($sellerOrder->canBeFulfilled(), 422, 'Pembayaran harus lunas sebelum pesanan diproses.');
 
         $sellerOrder->update(['status' => 'processing']);
         $sellerOrder->order->refreshStatus();
@@ -75,6 +76,7 @@ class SellerOrderController extends Controller
     {
         $this->ensureOwnOrder($request, $sellerOrder);
         abort_if(! in_array($sellerOrder->status, ['pending', 'processing'], true), 422, 'Order tidak dapat diproses.');
+        abort_unless($sellerOrder->canBeFulfilled(), 422, 'Pembayaran harus lunas sebelum pesanan diproses.');
 
         $sellerOrder->update(['status' => 'processing']);
         $sellerOrder->order->refreshStatus();
@@ -105,6 +107,7 @@ class SellerOrderController extends Controller
     public function complete(Request $request, SellerOrder $sellerOrder): SellerOrderResource
     {
         $this->ensureOwnOrder($request, $sellerOrder);
+        abort_unless($sellerOrder->canBeFulfilled(), 422, 'Pembayaran harus lunas sebelum pesanan diselesaikan.');
 
         if ($sellerOrder->shipping_method === 'store_pickup') {
             abort_unless($sellerOrder->shipping_status === 'completed', 422, 'Pesanan pickup belum selesai diverifikasi.');
@@ -114,6 +117,7 @@ class SellerOrderController extends Controller
             if ($sellerOrder->status !== 'completed') {
                 $sellerOrder->update(['status' => 'completed']);
                 $sellerOrder->shipment()->update(['status' => 'completed', 'completed_at' => now()]);
+                $sellerOrder->settleCodPayment();
                 $sellerOrder->order->refreshStatus();
 
                 AuditLogger::log('ORDER_COMPLETED', 'SellerOrder', $sellerOrder->id, [
@@ -140,6 +144,7 @@ class SellerOrderController extends Controller
 
         $allowed = $sellerOrder->shipping_method === 'store_pickup' ? self::PICKUP_STATUSES : self::DELIVERY_STATUSES;
         abort_unless(in_array($target, $allowed, true), 422, 'Transisi status pengiriman tidak valid.');
+        abort_unless($sellerOrder->canBeFulfilled(), 422, 'Pembayaran harus lunas sebelum pesanan diproses.');
 
         $oldStatus = $sellerOrder->shipping_status;
         $sellerOrder->update([

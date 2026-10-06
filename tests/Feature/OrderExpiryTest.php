@@ -172,4 +172,33 @@ class OrderExpiryTest extends TestCase
         $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'pending']);
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'pending']);
     }
+
+    public function test_expired_unpaid_order_is_cancelled_even_after_seller_started_processing(): void
+    {
+        $seller = User::factory()->create(['role' => 'seller']);
+        $buyer = User::factory()->create();
+        $store = SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Warung Warga', 'phone' => $seller->phone, 'address' => 'A1']);
+        $category = Category::create(['name' => 'Sembako']);
+        $product = Product::create(['seller_profile_id' => $store->id, 'category_id' => $category->id, 'name' => 'Beras', 'price' => 50000, 'stock' => 5]);
+        $order = Order::create(['order_number' => 'ORD-EXPIRED-PROCESSING', 'buyer_id' => $buyer->id, 'subtotal' => 100000, 'total_amount' => 100000, 'status' => 'processing']);
+        $sellerOrder = SellerOrder::create([
+            'order_id' => $order->id,
+            'seller_profile_id' => $store->id,
+            'subtotal' => 100000,
+            'total_amount' => 100000,
+            'shipping_method' => 'seller_delivery',
+            'status' => 'processing',
+            'payment_status' => Payment::STATUS_PENDING,
+            'payment_due_at' => now()->subMinute(),
+        ]);
+        OrderItem::create(['order_id' => $order->id, 'seller_profile_id' => $store->id, 'product_id' => $product->id, 'product_name' => 'Beras', 'price' => 50000, 'quantity' => 2, 'subtotal' => 100000]);
+        Payment::create(['order_id' => $order->id, 'seller_order_id' => $sellerOrder->id, 'buyer_id' => $buyer->id, 'seller_profile_id' => $store->id, 'method' => Payment::METHOD_BANK_TRANSFER, 'amount' => 100000]);
+        $product->decrement('stock', 2);
+
+        $this->artisan('orders:cancel-expired')->assertSuccessful();
+
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'cancelled', 'payment_status' => Payment::STATUS_FAILED]);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'cancelled']);
+        $this->assertSame(5, $product->refresh()->stock);
+    }
 }

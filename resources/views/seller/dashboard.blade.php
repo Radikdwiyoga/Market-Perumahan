@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -20,7 +20,7 @@
         <section class="rounded-2xl bg-forest-950 p-7 text-white shadow-lg sm:p-8">
             <p class="text-sm text-forest-200">Penjualan hari ini</p>
             <p class="mt-2 text-4xl font-black sm:text-5xl">Rp{{ number_format($stats['revenueToday'], 0, ',', '.') }}</p>
-            <p class="mt-3 text-forest-100">{{ $activeProductCount }} produk aktif Â· {{ $store->isOpenNow() ? 'Toko sedang buka' : 'Toko sedang tutup' }}</p>
+            <p class="mt-3 text-forest-100">{{ $activeProductCount }} produk aktif &middot; {{ $store->isOpenNow() ? 'Toko sedang buka' : 'Toko sedang tutup' }}</p>
             <div class="mt-6 flex flex-wrap gap-3">
                 <a href="{{ route('seller.products.index') }}" class="rounded-xl bg-warm-white px-5 py-3 font-bold text-forest-900">Kelola produk</a>
                 <a href="{{ route('seller.orders.index') }}" class="rounded-xl bg-white/15 px-5 py-3 font-bold text-white hover:bg-white/25">Pesanan masuk</a>
@@ -71,7 +71,7 @@
                             <a href="{{ route('seller.orders.show', $sellerOrder) }}" class="flex items-center justify-between gap-3 py-3">
                                 <div class="min-w-0">
                                     <p class="truncate font-bold">{{ $sellerOrder->order->buyer->name }}</p>
-                                    <p class="text-sm text-sage-500">{{ $sellerOrder->order->order_number }} Â· {{ ucfirst($sellerOrder->status) }}</p>
+                                    <p class="text-sm text-sage-500">{{ $sellerOrder->order->order_number }} &middot; {{ ucfirst($sellerOrder->status) }}</p>
                                 </div>
                                 <strong class="shrink-0 text-forest-700">Rp{{ number_format($sellerOrder->total_amount, 0, ',', '.') }}</strong>
                             </a>

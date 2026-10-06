@@ -97,3 +97,19 @@
     --radius-2xl: 1.5rem;
     --radius-full: 9999px;
 }
+
+@layer base {
+    :where(.flex, .grid) > * {
+        min-width: 0;
+    }
+
+    :where(p, td, th, dd) {
+        overflow-wrap: anywhere;
+    }
+
+    img,
+    video,
+    canvas {
+        max-width: 100%;
+    }
+}

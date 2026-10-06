@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -51,7 +51,7 @@
                         @foreach ($sellerOrder->payments as $payment)
                             <div class="mt-5 border-t border-warm-100 pt-5">
                                 <p class="text-sm font-bold">{{ $payment->methodLabel() }}</p>
-                                <p class="mt-1 text-sm text-sage-500">Status: {{ ucfirst($payment->status) }} Â· Rp{{ number_format($payment->amount, 0, ',', '.') }}</p>
+                                <p class="mt-1 text-sm text-sage-500">Status: {{ ucfirst($payment->status) }} &middot; Rp{{ number_format($payment->amount, 0, ',', '.') }}</p>
                                 @if ($payment->method === 'qris' && $payment->qris_image_snapshot)
                                     <img src="{{ Storage::disk('public')->url($payment->qris_image_snapshot) }}" alt="QRIS {{ $sellerOrder->sellerProfile->store_name }}" class="mt-3 h-40 w-40 rounded-lg object-cover" />
                                 @endif
@@ -60,7 +60,7 @@
                                     @if ($setting?->bank_name && $setting?->bank_account_number)
                                         <div class="mt-3 rounded-xl bg-forest-50 p-4 text-sm">
                                             <p class="font-bold text-forest-900">Transfer ke rekening toko</p>
-                                            <p class="mt-1 text-forest-700">{{ $setting->bank_name }} Â· {{ $setting->bank_account_number }}</p>
+                                            <p class="mt-1 text-forest-700">{{ $setting->bank_name }} &middot; {{ $setting->bank_account_number }}</p>
                                             <p class="text-forest-700">a.n. {{ $setting->bank_account_name }}</p>
                                         </div>
                                     @endif
@@ -68,7 +68,7 @@
                                 @if ($payment->proof_image)
                                     <a href="{{ Storage::disk('public')->url($payment->proof_image) }}" target="_blank" rel="noopener" class="mt-3 inline-block text-sm font-semibold text-forest-700 underline">Lihat bukti pembayaran</a>
                                 @endif
-                                @if ($payment->requiresProof() && ! $payment->proof_image && $payment->status !== 'paid')
+                                @if ($payment->requiresProof() && ! $payment->proof_image && $payment->status !== 'paid' && ! in_array($sellerOrder->status, ['completed', 'cancelled'], true))
                                     <form action="{{ route('payments.proof.store', $payment) }}" method="POST" enctype="multipart/form-data" class="mt-4 flex flex-wrap items-center gap-3">
                                         @csrf
                                         <input type="file" name="proof_image" accept="image/jpeg,image/png" required class="max-w-full rounded-lg border border-warm-200 p-2 text-sm" />
@@ -79,7 +79,7 @@
                                     <div class="mt-4 rounded-xl bg-red-50 p-4 text-sm">
                                         <p class="font-bold text-red-700">Pembayaran ditolak</p>
                                         <p class="mt-1 text-red-700">Alasan: {{ $payment->rejection_reason }}</p>
-                                        @if ($payment->requiresProof() && $payment->status !== 'paid')
+                                        @if ($payment->requiresProof() && $payment->status !== 'paid' && ! in_array($sellerOrder->status, ['completed', 'cancelled'], true))
                                             <form action="{{ route('payments.proof.store', $payment) }}" method="POST" enctype="multipart/form-data" class="mt-3 flex flex-wrap items-center gap-3">
                                                 @csrf
                                                 <input type="file" name="proof_image" accept="image/jpeg,image/png" required class="max-w-full rounded-lg border border-warm-200 p-2 text-sm" />

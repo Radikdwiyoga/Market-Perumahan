@@ -22,7 +22,8 @@ class AdminOrderController extends Controller
                 ->with(['buyer', 'sellerOrders.sellerProfile', 'sellerOrders.payments'])
                 ->when(in_array($status, ['pending', 'processing', 'completed', 'cancelled'], true), fn ($query) => $query->where('status', $status))
                 ->latest()
-                ->get(),
+                ->paginate(15)
+                ->withQueryString(),
             'status' => $status,
         ]);
     }
@@ -31,6 +32,7 @@ class AdminOrderController extends Controller
     {
         $this->ensureAdmin();
         abort_unless($payment->isVerifiable(), 422, 'Pembayaran ini sudah lunas atau ditolak.');
+        abort_unless($payment->hasRequiredProof(), 422, 'Bukti pembayaran wajib diunggah sebelum verifikasi.');
 
         $payment->update(['status' => Payment::STATUS_PAID, 'paid_at' => now(), 'verified_at' => now()]);
         $payment->sellerOrder()->update(['payment_status' => Payment::STATUS_PAID, 'status' => 'processing']);

@@ -88,6 +88,11 @@ class Payment extends Model
         return $this->status === self::STATUS_PENDING;
     }
 
+    public function hasRequiredProof(): bool
+    {
+        return ! $this->requiresProof() || filled($this->proof_image);
+    }
+
     /**
      * Apakah pembeli perlu mengunggah bukti pembayaran.
      */

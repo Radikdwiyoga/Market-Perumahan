@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -12,7 +12,7 @@
             <div>
                 <a href="{{ route('admin.dashboard') }}" class="text-sm font-bold text-forest-700">&larr; Panel admin</a>
                 <h1 class="mt-2 text-3xl font-black">Laporan</h1>
-                <p class="mt-1 text-sage-500">Statistik penjualan marketplace Â· {{ $label }}</p>
+                <p class="mt-1 text-sage-500">Statistik penjualan marketplace &middot; {{ $label }}</p>
             </div>
         </div>
         <form action="{{ route('admin.reports.index') }}" method="GET" class="mt-6 flex flex-wrap items-end gap-3 rounded-2xl bg-warm-white p-4 shadow-soft">

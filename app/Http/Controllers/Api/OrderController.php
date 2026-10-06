@@ -126,8 +126,10 @@ class OrderController extends Controller
             if ($sellerOrder->shipping_method === 'seller_delivery'
                 && $sellerOrder->shipping_status === 'delivered'
                 && $sellerOrder->status !== 'completed') {
+                abort_unless($sellerOrder->canBeFulfilled(), 422, 'Pembayaran harus lunas sebelum pesanan dikonfirmasi.');
                 $sellerOrder->update(['status' => 'completed']);
                 $sellerOrder->shipment()->update(['status' => 'completed', 'completed_at' => now()]);
+                $sellerOrder->settleCodPayment();
                 $completedCount++;
 
                 AuditLogger::log('ORDER_COMPLETED', 'SellerOrder', $sellerOrder->id, [

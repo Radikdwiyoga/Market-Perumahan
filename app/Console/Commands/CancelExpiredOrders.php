@@ -20,7 +20,7 @@ class CancelExpiredOrders extends Command
     {
         $expired = SellerOrder::query()
             ->where('payment_status', 'pending')
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'processing'])
             ->whereNotNull('payment_due_at')
             ->where('payment_due_at', '<=', now())
             ->with(['order.items', 'payments'])
@@ -32,7 +32,7 @@ class CancelExpiredOrders extends Command
 
                 // Sudah dibayar atau dibatalkan oleh proses lain (mis. verifikasi
                 // pembayaran) di antara SELECT dan UPDATE: jangan sentuh lagi.
-                if ($sellerOrder->status !== 'pending' || $sellerOrder->payment_status !== 'pending') {
+                if (! in_array($sellerOrder->status, ['pending', 'processing'], true) || $sellerOrder->payment_status !== 'pending') {
                     return null;
                 }
 

@@ -9,7 +9,7 @@
 <body class="min-h-screen bg-warm-50 pb-20 text-forest-950 sm:pb-0">
     <x-notification-stream />
     <x-app-header :unread-notifications="$unreadNotifications" :unread-chats="0" />
-    <main class="mx-auto max-w-7xl px-6 py-10">
+    <main class="mx-auto max-w-6xl px-6 py-10">
         <h1 class="text-2xl font-black">Panel admin</h1>
         <p class="text-sage-500">Ringkasan aktivitas Market UMKM Perumahan</p>
         @if (session('status'))<div class="mt-6 rounded-lg bg-forest-100 px-4 py-3 text-sm font-semibold text-forest-800">{{ session('status') }}</div>@endif

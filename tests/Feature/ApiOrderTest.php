@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\SellerOrder;
 use App\Models\SellerProfile;
@@ -222,7 +223,33 @@ class ApiOrderTest extends TestCase
 
         $this->assertSame('completed', $order->fresh()->status);
         $this->assertSame('completed', SellerOrder::first()->fresh()->status);
+        $this->assertDatabaseHas('payments', ['seller_order_id' => SellerOrder::first()->id, 'status' => Payment::STATUS_PAID]);
+        $this->assertDatabaseHas('seller_orders', ['id' => SellerOrder::first()->id, 'payment_status' => Payment::STATUS_PAID]);
         $this->assertDatabaseHas('shipments', ['seller_order_id' => SellerOrder::first()->id, 'status' => 'completed']);
+    }
+
+    public function test_buyer_cannot_complete_a_delivered_bank_transfer_before_it_is_paid(): void
+    {
+        $buyer = User::factory()->create();
+        $product = $this->product('Beras', 76000);
+        $this->cart($buyer, [$product->id => 1]);
+
+        $this->actingAs($buyer, 'sanctum')->postJson('/api/orders', [
+            'shipping_methods' => [$product->seller_profile_id => 'seller_delivery'],
+            'shipping_address' => 'Blok A2 No. 15',
+            'payment_method' => Payment::METHOD_BANK_TRANSFER,
+        ])->assertCreated();
+
+        $order = Order::first();
+        SellerOrder::first()->update(['shipping_status' => 'delivered']);
+
+        $this->actingAs($buyer, 'sanctum')
+            ->postJson('/api/orders/'.$order->id.'/complete')
+            ->assertStatus(422);
+
+        $this->assertSame('pending', SellerOrder::first()->fresh()->status);
+        $this->assertSame('pending', $order->fresh()->status);
+        $this->assertDatabaseHas('payments', ['seller_order_id' => SellerOrder::first()->id, 'status' => Payment::STATUS_PENDING]);
     }
 
     public function test_complete_requires_a_delivered_delivery(): void

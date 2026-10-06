@@ -191,11 +191,18 @@ class ApiPaymentTest extends TestCase
 
     public function test_seller_can_verify_a_bank_transfer_payment(): void
     {
+        Storage::fake('public');
         $buyer = User::factory()->create();
         $seller = $this->seller('Warung Warga');
         $order = $this->order('ORD-PAY-008', $buyer->id);
         $sellerOrder = $this->sellerOrder($order, $seller, 'seller_delivery');
         $payment = $this->payment($order, $sellerOrder, $buyer, Payment::METHOD_BANK_TRANSFER);
+
+        $this->actingAs($seller, 'sanctum')->postJson('/api/payments/'.$payment->id.'/verify')->assertStatus(422);
+
+        $this->actingAs($buyer, 'sanctum')
+            ->post('/api/payments/'.$payment->id.'/proof', ['proof_image' => UploadedFile::fake()->image('proof.jpg')])
+            ->assertOk();
 
         $this->actingAs($seller, 'sanctum')->postJson('/api/payments/'.$payment->id.'/verify')->assertOk();
 

@@ -100,6 +100,7 @@ class PaymentController extends Controller
     {
         abort_unless($payment->buyer_id === $request->user()->id, 403);
         abort_unless($payment->requiresProof(), 422, 'Bukti pembayaran tidak diperlukan untuk COD.');
+        abort_unless($payment->status === Payment::STATUS_PENDING, 422, 'Mulai ulang pembayaran sebelum mengunggah bukti baru.');
 
         $validated = $request->validate([
             'proof_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
@@ -129,6 +130,7 @@ class PaymentController extends Controller
         // bersifat final, dan yang ditolak (admin/kedaluwarsa) tidak boleh
         // diaktifkan kembali: pembeli harus membuat pembayaran baru.
         abort_unless($payment->isVerifiable(), 422, 'Pembayaran ini sudah lunas atau ditolak.');
+        abort_unless($payment->hasRequiredProof(), 422, 'Bukti pembayaran wajib diunggah sebelum verifikasi.');
 
         $payment->update(['status' => Payment::STATUS_PAID, 'paid_at' => now(), 'verified_at' => now()]);
         $payment->sellerOrder()->update(['payment_status' => Payment::STATUS_PAID, 'status' => 'processing']);

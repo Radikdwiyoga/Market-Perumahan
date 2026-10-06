@@ -93,9 +93,11 @@ class OrderController extends Controller
         abort_unless($sellerOrder->shipping_method === 'seller_delivery', 422, 'Metode pengiriman tidak sesuai.');
         abort_if($sellerOrder->shipping_status !== 'delivered', 422, 'Pesanan belum selesai dikirim.');
         abort_if($sellerOrder->status === 'completed', 422, 'Pesanan sudah selesai.');
+        abort_unless($sellerOrder->canBeFulfilled(), 422, 'Pembayaran harus lunas sebelum pesanan dikonfirmasi.');
 
         $sellerOrder->update(['status' => 'completed']);
         $sellerOrder->shipment()->update(['status' => 'completed', 'completed_at' => now()]);
+        $sellerOrder->settleCodPayment();
         $sellerOrder->order->refreshStatus();
 
         AuditLogger::log('ORDER_COMPLETED', 'SellerOrder', $sellerOrder->id, [

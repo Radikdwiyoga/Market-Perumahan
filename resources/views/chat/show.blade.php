@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -13,7 +13,7 @@
                 <x-brand-logo />
                 <a href="{{ route('chat.index') }}" class="text-sm font-bold text-forest-700">&larr; Daftar chat</a>
                 <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest-700 text-lg font-black text-lime-200">{{ strtoupper(substr($counterpart->name, 0, 1)) }}</span>
-                <div class="min-w-0"><h1 class="truncate text-lg font-black sm:text-xl">{{ $counterpart->name }}</h1><p class="text-xs text-sage-500">@if ($conversation->sellerProfile->user_id === auth()->id()) Pembeli Â· Blok {{ $counterpart->block }} No. {{ $counterpart->house_number }}@else Toko {{ $conversation->sellerProfile->store_name }}@endif</p></div>
+                <div class="min-w-0"><h1 class="truncate text-lg font-black sm:text-xl">{{ $counterpart->name }}</h1><p class="text-xs text-sage-500">@if ($conversation->sellerProfile->user_id === auth()->id()) Pembeli &middot; Blok {{ $counterpart->block }} No. {{ $counterpart->house_number }}@else Toko {{ $conversation->sellerProfile->store_name }}@endif</p></div>
             </div>
             <a href="{{ $whatsappLink }}" target="_blank" rel="noopener" class="rounded-xl bg-green-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-green-700">WhatsApp</a>
         </div>

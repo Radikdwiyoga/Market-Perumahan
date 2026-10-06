@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -13,7 +13,7 @@
         <section class="rounded-2xl bg-forest-700 p-8 text-white shadow-lg">
             <p class="text-sm text-forest-100">Akun aktif</p>
             <h2 class="mt-2 text-3xl font-bold">Halo, {{ $user->name }}</h2>
-            <p class="mt-3 text-forest-100">{{ ucfirst($user->role) }} Â· Blok {{ $user->block }} No. {{ $user->house_number }}</p>
+            <p class="mt-3 text-forest-100">{{ ucfirst($user->role) }} &middot; Blok {{ $user->block }} No. {{ $user->house_number }}</p>
         </section>
         <section class="mt-8 grid gap-5 md:grid-cols-3">
             <article class="rounded-xl bg-warm-white p-6 shadow-soft"><p class="text-sm text-sage-500">Role</p><p class="mt-2 text-xl font-bold">{{ ucfirst($user->role) }}</p></article>

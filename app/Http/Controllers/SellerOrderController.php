@@ -70,6 +70,7 @@ class SellerOrderController extends Controller
         // bersifat final, dan yang ditolak (admin/kedaluwarsa) tidak boleh
         // diaktifkan kembali: pembeli harus membuat pembayaran baru.
         abort_unless($payment->isVerifiable(), 422, 'Pembayaran ini sudah lunas atau ditolak.');
+        abort_unless($payment->hasRequiredProof(), 422, 'Bukti pembayaran wajib diunggah sebelum verifikasi.');
 
         $payment->update(['status' => Payment::STATUS_PAID, 'paid_at' => now(), 'verified_at' => now()]);
         $payment->sellerOrder()->update(['payment_status' => Payment::STATUS_PAID, 'status' => 'processing']);
@@ -95,6 +96,7 @@ class SellerOrderController extends Controller
         $status = $request->validate([
             'shipping_status' => ['required', Rule::in($allowed)],
         ])['shipping_status'];
+        abort_unless($sellerOrder->canBeFulfilled(), 422, 'Pembayaran harus lunas sebelum pesanan diproses.');
 
         $oldStatus = $sellerOrder->shipping_status;
         $sellerOrder->update([
@@ -140,6 +142,8 @@ class SellerOrderController extends Controller
         abort_if($sellerOrder->shipping_method !== 'store_pickup', 422, 'Metode pengambilan tidak sesuai.');
         abort_if($sellerOrder->shipping_status !== 'ready', 422, 'Pesanan belum siap diambil.');
         abort_if($sellerOrder->status === 'cancelled', 422, 'Pesanan sudah dibatalkan.');
+        abort_unless($sellerOrder->canBeFulfilled(), 422, 'Pembayaran harus lunas sebelum pesanan diserahkan.');
+        abort_unless($sellerOrder->canBeFulfilled(), 422, 'Pembayaran harus lunas sebelum pesanan diserahkan.');
 
         $code = strtoupper((string) $request->string('pickup_code')->value());
         abort_if($code === '' || ! hash_equals((string) $sellerOrder->pickup_code, $code), 422, 'Kode pengambilan salah.');
@@ -150,20 +154,7 @@ class SellerOrderController extends Controller
         $sellerOrder->update(['shipping_status' => 'completed', 'status' => 'completed']);
         $sellerOrder->shipment()->update(['status' => 'completed', 'completed_at' => now()]);
 
-        $codSettled = false;
-
-        foreach ($sellerOrder->payments as $payment) {
-            if ($payment->method === Payment::METHOD_COD && $payment->status !== Payment::STATUS_PAID) {
-                $payment->update(['status' => Payment::STATUS_PAID, 'paid_at' => now(), 'verified_at' => now()]);
-                $codSettled = true;
-            }
-        }
-
-        // Status pembayaran seller-order mengikuti pembayaran COD yang baru saja
-        // diselesaikan; transfer bank/QRIS tetap menunggu verifikasi manual.
-        if ($codSettled) {
-            $sellerOrder->update(['payment_status' => Payment::STATUS_PAID]);
-        }
+        $sellerOrder->settleCodPayment();
 
         $sellerOrder->order->refreshStatus();
 

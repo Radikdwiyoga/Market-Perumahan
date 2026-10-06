@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -12,7 +12,7 @@
             <div>
                 <a href="{{ route('dashboard') }}" class="text-sm font-bold text-forest-700">&larr; Dashboard</a>
                 <h1 class="mt-2 text-3xl font-black">Laporan penjualan</h1>
-                <p class="mt-1 text-sage-500">{{ $store->store_name }} Â· {{ $periodLabel }}</p>
+                <p class="mt-1 text-sage-500">{{ $store->store_name }} &middot; {{ $periodLabel }}</p>
             </div>
             <a href="{{ route('seller.products.index') }}" class="rounded-xl border border-warm-200 bg-warm-white px-4 py-3 text-sm font-bold">Produk toko</a>
         </div>

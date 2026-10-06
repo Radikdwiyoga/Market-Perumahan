@@ -64,7 +64,7 @@
 
     // Foto baru dipilih = AI langsung aktif; tanpa foto baru, andalkan foto lama.
     const updateAvailability = () => {
-        const ready = hasNewImage() || Boolean(existingImage);
+        const ready = hasNewImage() || Boolean(existingProduct);
         trigger.disabled = !ready;
 
         if (!ready) {
@@ -109,7 +109,7 @@
     };
 
     trigger.addEventListener('click', async () => {
-        if (!hasNewImage() && !existingImage) {
+        if (!hasNewImage() && !existingProduct) {
             setStatus('Pilih foto produk terlebih dahulu.', 'error');
 
             return;

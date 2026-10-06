@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -34,7 +34,7 @@
                 <div>
                     <p class="mb-5 text-sm font-bold uppercase tracking-[0.28em] text-lime-300">Dukung UMKM, hidup makin hangat</p>
                     <h1 class="max-w-3xl text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">Kebutuhan warga, dari UMKM tetangga sendiri.</h1>
-                    <p class="mt-7 max-w-xl text-base leading-7 text-forest-100 sm:text-lg sm:leading-8">Temukan produk UMKM â€” makanan, sembako, dan kebutuhan harian â€” dari usaha kecil di sekitar perumahan. Pesan mudah, dukung langsung pedagang lokal.</p>
+                    <p class="mt-7 max-w-xl text-base leading-7 text-forest-100 sm:text-lg sm:leading-8">Temukan produk UMKM &mdash; makanan, sembako, dan kebutuhan harian &mdash; dari usaha kecil di sekitar perumahan. Pesan mudah, dukung langsung pedagang lokal.</p>
                     <form action="{{ route('marketplace.index') }}" method="GET" class="mt-8 flex max-w-xl flex-col gap-2 rounded-2xl bg-warm-white p-2 sm:flex-row sm:gap-3">
                         <input name="q" value="{{ $search }}" placeholder="Cari produk UMKM atau kebutuhan..." class="min-w-0 flex-1 rounded-xl border-0 bg-transparent px-4 py-3.5 text-forest-950 outline-none focus:ring-0" />
                         <button class="shrink-0 rounded-xl bg-lime-300 px-5 py-3.5 font-bold text-forest-950 hover:bg-lime-200">Cari</button>
@@ -68,7 +68,7 @@
                 <div class="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
                     @foreach ($products as $product)
                         <article class="group flex flex-col overflow-hidden rounded-2xl bg-warm-white shadow-soft transition hover:-translate-y-1 hover:shadow-card">
-                            <a href="{{ route('products.show', $product) }}" class="relative flex aspect-4/3 items-end justify-between bg-gradient-to-br from-lime-100 via-forest-100 to-forest-200 p-5">
+                            <a href="{{ route('products.show', $product) }}" class="relative flex aspect-4/3 items-end justify-between bg-linear-to-br from-lime-100 via-forest-100 to-forest-200 p-5">
                                 @if ($product->image)
                                     <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" class="absolute inset-0 h-full w-full object-cover" />
                                     <span class="absolute left-4 top-4 rounded-full bg-warm-white/90 px-3 py-1 text-xs font-bold text-forest-900">{{ $product->category->name }}</span>
@@ -82,7 +82,7 @@
                                 <p class="text-xs font-semibold uppercase tracking-wider text-sage-400"><a href="{{ route('stores.show', $product->sellerProfile) }}" class="hover:text-forest-700">{{ $product->sellerProfile->store_name }}</a></p>
                                 <h3 class="mt-2 text-lg font-bold sm:text-xl"><a href="{{ route('products.show', $product) }}" class="hover:text-forest-700">{{ $product->name }}</a></h3>
                                 <p class="mt-2 line-clamp-2 text-sm leading-6 text-sage-500">{{ $product->description }}</p>
-                                @if ($product->reviews_count > 0)<p class="mt-3 text-sm font-bold text-amber-600">{{ number_format($product->reviews_avg_rating, 1, ',', '.') }}/5 Â· {{ $product->reviews_count }} review</p>@endif
+                                @if ($product->reviews_count > 0)<p class="mt-3 text-sm font-bold text-amber-600">{{ number_format($product->reviews_avg_rating, 1, ',', '.') }}/5 &middot; {{ $product->reviews_count }} review</p>@endif
                                 <div class="mt-4 flex items-center justify-between">
                                     <div>
                                         @if ($product->hasDiscount())
@@ -132,7 +132,7 @@
                             </span>
                             <span class="min-w-0">
                                 <span class="block truncate text-lg font-black group-hover:text-forest-700">{{ $store->store_name }}</span>
-                                <span class="mt-1 block text-sm text-sage-500">{{ $store->products_count }} produk Â· {{ $store->businessHoursLabel() }}</span>
+                                <span class="mt-1 block text-sm text-sage-500">{{ $store->products_count }} produk &middot; {{ $store->businessHoursLabel() }}</span>
                             </span>
                         </a>
                     @endforeach

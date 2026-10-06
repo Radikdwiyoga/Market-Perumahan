@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -112,7 +112,7 @@
                             @endforeach
                         </ul>
                         @if ($product->sellerProfile->min_order_amount > 0)
-                            <p class="mt-2 text-xs text-sage-500">Minimal pembelian diantar: Rp{{ number_format($product->sellerProfile->min_order_amount, 0, ',', '.') }}@if ($product->sellerProfile->free_shipping_threshold) Â· gratis ongkir mulai Rp{{ number_format($product->sellerProfile->free_shipping_threshold, 0, ',', '.') }}@endif</p>
+                            <p class="mt-2 text-xs text-sage-500">Minimal pembelian diantar: Rp{{ number_format($product->sellerProfile->min_order_amount, 0, ',', '.') }}@if ($product->sellerProfile->free_shipping_threshold) &middot; gratis ongkir mulai Rp{{ number_format($product->sellerProfile->free_shipping_threshold, 0, ',', '.') }}@endif</p>
                         @endif
                     @endif
                     <p class="mt-4 text-sm font-bold">Metode pembayaran</p>

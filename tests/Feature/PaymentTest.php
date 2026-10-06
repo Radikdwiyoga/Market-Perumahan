@@ -70,6 +70,32 @@ class PaymentTest extends TestCase
         $response->assertRedirect();
         $payment->refresh();
         $this->assertNotNull($payment->proof_image);
+        $this->assertSame(Payment::STATUS_PENDING, $payment->status);
+        Storage::disk('public')->assertExists($payment->proof_image);
+    }
+
+    public function test_buyer_can_retry_a_rejected_payment_by_uploading_new_proof(): void
+    {
+        Storage::fake('public');
+        $buyer = User::factory()->create();
+        $seller = User::factory()->create(['role' => 'seller']);
+        $store = SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Warung Warga', 'phone' => $seller->phone, 'address' => 'Blok A1']);
+        $order = Order::create(['order_number' => 'ORD-RETRY-001', 'buyer_id' => $buyer->id, 'subtotal' => 10000, 'total_amount' => 10000]);
+        $sellerOrder = SellerOrder::create(['order_id' => $order->id, 'seller_profile_id' => $store->id, 'subtotal' => 10000, 'total_amount' => 10000, 'shipping_method' => 'seller_delivery', 'payment_status' => Payment::STATUS_FAILED]);
+        $oldProof = 'payment-proofs/old-proof.png';
+        Storage::disk('public')->put($oldProof, 'old proof');
+        $payment = Payment::create(['order_id' => $order->id, 'seller_order_id' => $sellerOrder->id, 'buyer_id' => $buyer->id, 'seller_profile_id' => $store->id, 'method' => Payment::METHOD_BANK_TRANSFER, 'amount' => 10000, 'status' => Payment::STATUS_FAILED, 'proof_image' => $oldProof, 'rejection_reason' => 'Bukti tidak jelas.']);
+
+        $response = $this->actingAs($buyer)->post(route('payments.proof.store', $payment), ['proof_image' => UploadedFile::fake()->image('replacement.jpg')]);
+
+        $response->assertRedirect();
+        $payment->refresh();
+        $sellerOrder->refresh();
+        $this->assertSame(Payment::STATUS_PENDING, $payment->status);
+        $this->assertNull($payment->rejection_reason);
+        $this->assertSame(Payment::STATUS_PENDING, $sellerOrder->payment_status);
+        $this->assertTrue($sellerOrder->payment_due_at->isFuture());
+        Storage::disk('public')->assertMissing($oldProof);
         Storage::disk('public')->assertExists($payment->proof_image);
     }
 
@@ -102,6 +128,7 @@ class PaymentTest extends TestCase
 
     public function test_seller_can_verify_a_bank_transfer_payment(): void
     {
+        Storage::fake('public');
         $buyer = User::factory()->create();
         $seller = User::factory()->create(['role' => 'seller']);
         $store = SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Warung Warga', 'phone' => $seller->phone, 'address' => 'Blok A1']);
@@ -109,6 +136,9 @@ class PaymentTest extends TestCase
         $sellerOrder = SellerOrder::create(['order_id' => $order->id, 'seller_profile_id' => $store->id, 'subtotal' => 10000, 'total_amount' => 10000, 'shipping_method' => 'seller_delivery']);
         $payment = Payment::create(['order_id' => $order->id, 'seller_order_id' => $sellerOrder->id, 'buyer_id' => $buyer->id, 'seller_profile_id' => $store->id, 'method' => 'bank_transfer', 'amount' => 10000]);
 
+        $this->actingAs($seller)->patch(route('seller.orders.payments.verify', $payment))->assertStatus(422);
+
+        $this->actingAs($buyer)->post(route('payments.proof.store', $payment), ['proof_image' => UploadedFile::fake()->image('proof.jpg')])->assertRedirect();
         $this->actingAs($seller)->patch(route('seller.orders.payments.verify', $payment))->assertRedirect();
 
         $payment->refresh();

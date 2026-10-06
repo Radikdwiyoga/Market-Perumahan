@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\SellerOrder;
 use App\Models\SellerProfile;
@@ -132,6 +133,28 @@ class ApiSellerOrderTest extends TestCase
         $this->actingAs($seller, 'sanctum')->postJson('/api/seller/orders/'.$sellerOrder->id.'/accept')->assertStatus(422);
     }
 
+    public function test_seller_cannot_accept_or_process_an_unpaid_bank_transfer_order(): void
+    {
+        $seller = $this->seller('Toko A');
+        $buyer = User::factory()->create();
+        $order = $this->order('ORD-API-UNPAID-ACCEPT', $buyer->id);
+        $sellerOrder = $this->sellerOrder($order, $seller, 'seller_delivery');
+        $sellerOrder->update(['payment_status' => Payment::STATUS_PENDING]);
+        $sellerOrder->payments()->update(['method' => Payment::METHOD_BANK_TRANSFER, 'status' => Payment::STATUS_PENDING]);
+
+        $this->actingAs($seller, 'sanctum')
+            ->postJson('/api/seller/orders/'.$sellerOrder->id.'/accept')
+            ->assertStatus(422);
+
+        $sellerOrder->update(['status' => 'processing']);
+
+        $this->actingAs($seller, 'sanctum')
+            ->postJson('/api/seller/orders/'.$sellerOrder->id.'/process')
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'processing', 'payment_status' => Payment::STATUS_PENDING]);
+    }
+
     public function test_seller_can_transition_shipping_through_the_full_delivery_flow(): void
     {
         $seller = $this->seller('Toko A');
@@ -156,6 +179,37 @@ class ApiSellerOrderTest extends TestCase
         $this->assertDatabaseHas('user_notifications', ['user_id' => $buyer->id, 'type' => 'order_delivered']);
     }
 
+    public function test_seller_cannot_advance_unpaid_bank_transfer_to_shipping_via_api(): void
+    {
+        $seller = $this->seller('Toko A');
+        $buyer = User::factory()->create();
+        $order = $this->order('ORD-API-UNPAID', $buyer->id);
+        $sellerOrder = $this->sellerOrder($order, $seller, 'seller_delivery');
+        $sellerOrder->update(['payment_status' => Payment::STATUS_PENDING]);
+        $sellerOrder->payments()->update(['method' => Payment::METHOD_BANK_TRANSFER, 'status' => Payment::STATUS_PENDING]);
+
+        $this->actingAs($seller, 'sanctum')
+            ->postJson('/api/seller-orders/'.$sellerOrder->id.'/ready')
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'shipping_status' => 'pending', 'status' => 'pending']);
+    }
+
+    public function test_seller_cannot_complete_unpaid_bank_transfer_pickup_via_api(): void
+    {
+        $seller = $this->seller('Toko A');
+        $buyer = User::factory()->create();
+        $order = $this->order('ORD-API-PICKUP-UNPAID', $buyer->id);
+        $sellerOrder = $this->sellerOrder($order, $seller, 'store_pickup', shippingStatus: 'ready');
+        $sellerOrder->payments()->update(['method' => Payment::METHOD_BANK_TRANSFER, 'status' => Payment::STATUS_PENDING]);
+
+        $this->actingAs($seller, 'sanctum')
+            ->postJson('/api/seller-orders/'.$sellerOrder->id.'/pickup/verify', ['pickup_code' => '123456'])
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'shipping_status' => 'ready', 'status' => 'pending']);
+    }
+
     public function test_pickup_order_cannot_be_marked_out_for_delivery(): void
     {
         $seller = $this->seller('Toko A');
@@ -176,6 +230,8 @@ class ApiSellerOrderTest extends TestCase
         $this->actingAs($seller, 'sanctum')->postJson('/api/seller/orders/'.$sellerOrder->id.'/complete')->assertOk();
 
         $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'completed']);
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'payment_status' => Payment::STATUS_PAID]);
+        $this->assertDatabaseHas('payments', ['seller_order_id' => $sellerOrder->id, 'status' => Payment::STATUS_PAID]);
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'completed']);
         $this->assertDatabaseHas('user_notifications', ['user_id' => $buyer->id, 'type' => 'order_completed']);
     }
@@ -205,7 +261,7 @@ class ApiSellerOrderTest extends TestCase
 
     private function sellerOrder(Order $order, User $seller, string $method, string $status = 'pending', string $shippingStatus = 'pending'): SellerOrder
     {
-        return SellerOrder::create([
+        $sellerOrder = SellerOrder::create([
             'order_id' => $order->id,
             'seller_profile_id' => $seller->sellerProfile()->first()->id,
             'subtotal' => $order->subtotal,
@@ -215,5 +271,16 @@ class ApiSellerOrderTest extends TestCase
             'status' => $status,
             'pickup_code' => $method === 'store_pickup' ? '123456' : null,
         ]);
+
+        Payment::create([
+            'order_id' => $order->id,
+            'seller_order_id' => $sellerOrder->id,
+            'buyer_id' => $order->buyer_id,
+            'seller_profile_id' => $sellerOrder->seller_profile_id,
+            'method' => Payment::METHOD_COD,
+            'amount' => $sellerOrder->total_amount,
+        ]);
+
+        return $sellerOrder;
     }
 }

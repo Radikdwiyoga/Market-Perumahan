@@ -13,6 +13,23 @@
 (() => {
     'use strict';
 
+    const useFallbackImage = (image) => {
+        if (!(image instanceof HTMLImageElement) || image.dataset.fallbackApplied) {
+            return;
+        }
+
+        image.dataset.fallbackApplied = 'true';
+        image.classList.add('object-contain', 'bg-warm-white', 'p-2');
+        image.src = new URL('/images/umkm-logo.png', window.location.origin).href;
+    };
+
+    document.addEventListener('error', (event) => useFallbackImage(event.target), true);
+    document.querySelectorAll('img').forEach((image) => {
+        if (image.complete && !image.naturalWidth) {
+            useFallbackImage(image);
+        }
+    });
+
     const source = document.querySelector('[data-notifications-source]');
 
     if (!source) {

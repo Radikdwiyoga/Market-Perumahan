@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -93,7 +93,7 @@
                                 <p class="text-xs font-semibold uppercase tracking-wider text-sage-400">{{ $product->category->name }}</p>
                                 <h3 class="mt-2 text-lg font-bold"><a href="{{ route('products.show', $product) }}" class="hover:text-forest-700">{{ $product->name }}</a></h3>
                                 @if ($product->reviews_count > 0)
-                                    <p class="mt-2 text-sm font-bold text-amber-600">{{ number_format($product->reviews_avg_rating, 1, ',', '.') }}/5 Â· {{ $product->reviews_count }} review</p>
+                                    <p class="mt-2 text-sm font-bold text-amber-600">{{ number_format($product->reviews_avg_rating, 1, ',', '.') }}/5 &middot; {{ $product->reviews_count }} review</p>
                                 @endif
                                 <div class="mt-4 flex items-center justify-between">
                                     @if ($product->hasDiscount())

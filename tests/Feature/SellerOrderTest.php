@@ -56,6 +56,7 @@ class SellerOrderTest extends TestCase
         $product = Product::create(['seller_profile_id' => $store->id, 'category_id' => $category->id, 'name' => 'Paket Sembako', 'price' => 30000, 'stock' => 1]);
         $order = Order::create(['order_number' => 'ORD-DETAIL-001', 'buyer_id' => $buyer->id, 'subtotal' => 30000, 'total_amount' => 30000]);
         $sellerOrder = SellerOrder::create(['order_id' => $order->id, 'seller_profile_id' => $store->id, 'subtotal' => 30000, 'total_amount' => 30000, 'shipping_method' => 'seller_delivery']);
+        $payment = Payment::create(['order_id' => $order->id, 'seller_order_id' => $sellerOrder->id, 'buyer_id' => $buyer->id, 'seller_profile_id' => $store->id, 'method' => Payment::METHOD_COD, 'amount' => 30000]);
         OrderItem::create(['order_id' => $order->id, 'seller_profile_id' => $store->id, 'product_id' => $product->id, 'product_name' => 'Paket Sembako', 'price' => 30000, 'quantity' => 1, 'subtotal' => 30000]);
 
         $this->actingAs($seller)->get(route('seller.orders.index'))->assertOk()->assertSee('ORD-DETAIL-001')->assertSee('Diantar oleh seller')->assertSee('Status pengiriman: Pending');
@@ -64,7 +65,40 @@ class SellerOrderTest extends TestCase
         $this->actingAs($buyer)->post(route('orders.confirm', $sellerOrder))->assertRedirect();
 
         $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'shipping_status' => 'delivered', 'status' => 'completed']);
+        $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => Payment::STATUS_PAID]);
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'payment_status' => Payment::STATUS_PAID]);
         $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'completed']);
+    }
+
+    public function test_seller_cannot_advance_unpaid_bank_transfer_to_shipping(): void
+    {
+        $seller = User::factory()->create(['role' => 'seller']);
+        $buyer = User::factory()->create();
+        $store = SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Warung Warga', 'phone' => $seller->phone, 'address' => 'A1']);
+        $order = Order::create(['order_number' => 'ORD-UNPAID-DELIVERY', 'buyer_id' => $buyer->id, 'subtotal' => 20000, 'total_amount' => 20000]);
+        $sellerOrder = SellerOrder::create(['order_id' => $order->id, 'seller_profile_id' => $store->id, 'subtotal' => 20000, 'total_amount' => 20000, 'shipping_method' => 'seller_delivery']);
+        Payment::create(['order_id' => $order->id, 'seller_order_id' => $sellerOrder->id, 'buyer_id' => $buyer->id, 'seller_profile_id' => $store->id, 'method' => Payment::METHOD_BANK_TRANSFER, 'amount' => 20000]);
+
+        $this->actingAs($seller)
+            ->patch(route('seller.orders.shipping.update', $sellerOrder), ['shipping_status' => 'ready'])
+            ->assertStatus(422);
+
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'pending', 'shipping_status' => 'pending', 'payment_status' => 'pending']);
+    }
+
+    public function test_buyer_cannot_confirm_delivery_while_bank_transfer_is_unpaid(): void
+    {
+        $seller = User::factory()->create(['role' => 'seller']);
+        $buyer = User::factory()->create();
+        $store = SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Warung Warga', 'phone' => $seller->phone, 'address' => 'A1']);
+        $order = Order::create(['order_number' => 'ORD-UNPAID-CONFIRM', 'buyer_id' => $buyer->id, 'subtotal' => 20000, 'total_amount' => 20000]);
+        $sellerOrder = SellerOrder::create(['order_id' => $order->id, 'seller_profile_id' => $store->id, 'subtotal' => 20000, 'total_amount' => 20000, 'shipping_method' => 'seller_delivery', 'shipping_status' => 'delivered']);
+        Payment::create(['order_id' => $order->id, 'seller_order_id' => $sellerOrder->id, 'buyer_id' => $buyer->id, 'seller_profile_id' => $store->id, 'method' => Payment::METHOD_BANK_TRANSFER, 'amount' => 20000]);
+
+        $this->actingAs($buyer)->post(route('orders.confirm', $sellerOrder))->assertStatus(422);
+
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'pending', 'payment_status' => 'pending']);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'pending']);
     }
 
     public function test_seller_can_verify_pickup_code_and_complete_pickup_order(): void
@@ -120,7 +154,7 @@ class SellerOrderTest extends TestCase
         $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'paid']);
     }
 
-    public function test_pickup_verification_does_not_mark_a_bank_transfer_as_paid(): void
+    public function test_pickup_cannot_be_completed_before_bank_transfer_is_paid(): void
     {
         $seller = User::factory()->create(['role' => 'seller']);
         $buyer = User::factory()->create();
@@ -137,9 +171,11 @@ class SellerOrderTest extends TestCase
         ]);
         $payment = Payment::create(['order_id' => $order->id, 'seller_order_id' => $sellerOrder->id, 'buyer_id' => $buyer->id, 'seller_profile_id' => $store->id, 'method' => 'bank_transfer', 'amount' => 20000, 'status' => 'pending']);
 
-        $this->actingAs($seller)->post(route('seller.orders.pickup', $sellerOrder), ['pickup_code' => '482915'])->assertRedirect();
+        $this->actingAs($seller)
+            ->post(route('seller.orders.pickup', $sellerOrder), ['pickup_code' => '482915'])
+            ->assertStatus(422);
 
-        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'completed', 'payment_status' => 'pending']);
+        $this->assertDatabaseHas('seller_orders', ['id' => $sellerOrder->id, 'status' => 'pending', 'shipping_status' => 'ready', 'payment_status' => 'pending']);
         $this->assertDatabaseHas('payments', ['id' => $payment->id, 'status' => 'pending']);
     }
 

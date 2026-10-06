@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -49,7 +49,7 @@
                         <div class="min-w-0">
                             <p class="text-xs font-bold uppercase tracking-wider text-sage-400">{{ $sellerOrder->order->order_number }}</p>
                             <h2 class="mt-1 text-xl font-black">{{ $sellerOrder->order->buyer->name }}</h2>
-                            <p class="mt-1 text-sm text-sage-500">{{ $sellerOrder->order->buyer->phone }} Â· {{ $sellerOrder->order->buyer->address }}</p>
+                            <p class="mt-1 text-sm text-sage-500">{{ $sellerOrder->order->buyer->phone }} &middot; {{ $sellerOrder->order->buyer->address }}</p>
                         </div>
                         <div class="text-right">
                             <p class="font-black text-forest-700">Rp{{ number_format($sellerOrder->total_amount, 0, ',', '.') }}</p>
