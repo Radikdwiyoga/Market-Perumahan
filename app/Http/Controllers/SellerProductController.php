@@ -8,6 +8,7 @@ use App\Support\AuditLogger;
 use App\Support\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -48,7 +49,13 @@ class SellerProductController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = ImageOptimizer::store($request->file('image'), 'products');
+            try {
+                $validated['image'] = ImageOptimizer::store($request->file('image'), 'products');
+            } catch (\Throwable $e) {
+                Log::error('Gagal mengunggah foto produk: '.$e->getMessage(), ['exception' => $e]);
+
+                return back()->withInput()->withErrors(['image' => 'Gagal menyimpan foto produk: '.$e->getMessage()]);
+            }
         }
 
         $product = $store->products()->create($validated);
@@ -84,10 +91,16 @@ class SellerProductController extends Controller
         $product = $store->products()->findOrFail($product);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = ImageOptimizer::store($request->file('image'), 'products');
+            try {
+                $validated['image'] = ImageOptimizer::store($request->file('image'), 'products');
 
-            if ($product->image) {
-                Storage::disk('public')->delete($product->image);
+                if ($product->image) {
+                    Storage::disk('public')->delete($product->image);
+                }
+            } catch (\Throwable $e) {
+                Log::error('Gagal mengunggah foto produk: '.$e->getMessage(), ['exception' => $e]);
+
+                return back()->withInput()->withErrors(['image' => 'Gagal menyimpan foto produk: '.$e->getMessage()]);
             }
         } else {
             unset($validated['image']);

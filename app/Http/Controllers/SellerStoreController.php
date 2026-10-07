@@ -7,6 +7,7 @@ use App\Support\AuditLogger;
 use App\Support\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -31,11 +32,19 @@ class SellerStoreController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $validated['image'] = ImageOptimizer::store($request->file('image'), 'stores');
+            try {
+                $validated['image'] = ImageOptimizer::store($request->file('image'), 'stores');
 
-            if ($store->image) {
-                Storage::disk('public')->delete($store->image);
+                if ($store->image) {
+                    Storage::disk('public')->delete($store->image);
+                }
+            } catch (\Throwable $e) {
+                Log::error('Gagal mengunggah logo toko: '.$e->getMessage(), ['exception' => $e]);
+
+                return back()->withInput()->withErrors(['image' => 'Gagal menyimpan logo toko: '.$e->getMessage()]);
             }
+        } else {
+            unset($validated['image']);
         }
 
         // Status toko hanya boleh diubah seller yang tokonya sudah terverifikasi,

@@ -2,10 +2,10 @@
 
 namespace App\Support;
 
-use GdImage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
+use Throwable;
 
 /**
  * Optimasi gambar upload menjadi WebP (resize bila melebihi dimensi maksimal)
@@ -14,39 +14,39 @@ use RuntimeException;
 final class ImageOptimizer
 {
     /**
+     * Batas jumlah piksel sebelum gambar didecode.
+     */
+    private const MAX_PIXELS = 40_000_000;
+
+    /**
      * Simpan gambar sebagai WebP di disk public.
-     * Fail-soft: bila file tidak dapat didecode, simpan file asli apa adanya.
+     * Fail-soft: bila GD tidak aktif atau proses WebP gagal, simpan file asli apa adanya.
      */
     public static function store(UploadedFile $file, string $directory, int $maxDimension = 1600, int $quality = 82): string
     {
-        $image = self::decode($file);
-
-        if ($image === null) {
+        if (! extension_loaded('gd')) {
             return $file->store($directory, 'public');
         }
 
         try {
+            $image = self::decode($file);
+
+            if ($image === null) {
+                return $file->store($directory, 'public');
+            }
+
             $resized = self::resize($image, $maxDimension);
 
             $path = $directory.'/'.self::uniqueFileName($file).'.webp';
             self::save($resized, $path, $quality);
 
             return $path;
-        } catch (RuntimeException) {
+        } catch (Throwable) {
             return $file->store($directory, 'public');
         }
     }
 
-    /**
-     * Batas jumlah piksel sebelum gambar didecode.
-     *
-     * GD mengodekan seluruh buffer gambar ke memori, sehingga gambar kecil
-     * berdimensi sangat besar (dekompresi zip bomb) bisa menghabiskan RAM meski
-     * ukuran filenya cuma beberapa ratus KB.
-     */
-    private const MAX_PIXELS = 40_000_000;
-
-    private static function decode(UploadedFile $file): ?GdImage
+    private static function decode(UploadedFile $file): mixed
     {
         $path = $file->getPathname();
         $info = @getimagesize($path);
@@ -70,7 +70,7 @@ final class ImageOptimizer
         return $image ?: null;
     }
 
-    private static function resize(GdImage $image, int $maxDimension): GdImage
+    private static function resize(mixed $image, int $maxDimension): mixed
     {
         $width = imagesx($image);
         $height = imagesy($image);
@@ -101,7 +101,7 @@ final class ImageOptimizer
         return substr($name, 0, 60).'-'.substr(md5(uniqid('', true)), 0, 12);
     }
 
-    private static function save(GdImage $image, string $path, int $quality): void
+    private static function save(mixed $image, string $path, int $quality): void
     {
         if (! imageistruecolor($image)) {
             imagepalettetotruecolor($image);
@@ -116,7 +116,8 @@ final class ImageOptimizer
         ob_end_clean();
 
         if ($contents === false || $contents === '') {
-            throw new RuntimeException('Gagal menyimpan gambar WebP.');
+            imagedestroy($image);
+            throw new RuntimeException('Gagal memproses gambar WebP.');
         }
 
         Storage::disk('public')->put($path, $contents);
