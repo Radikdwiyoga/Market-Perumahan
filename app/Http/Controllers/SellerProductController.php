@@ -89,6 +89,8 @@ class SellerProductController extends Controller
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
+        } else {
+            unset($validated['image']);
         }
 
         $product->update($validated);

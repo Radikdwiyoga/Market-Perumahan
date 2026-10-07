@@ -2,7 +2,7 @@
 PHP_CLI_SERVER_WORKERS = "8"
 
 [phases.setup]
-nixPkgs = ["php83", "php83Extensions.pdo_pgsql", "php83Extensions.pgsql", "nodejs_22"]
+nixPkgs = ["php83", "php83Extensions.pdo_pgsql", "php83Extensions.pgsql", "php83Extensions.gd", "nodejs_22"]
 
 [phases.install]
 cmds = [
@@ -16,4 +16,4 @@ cmds = [
 ]
 
 [start]
-cmd = "php artisan storage:link && php artisan migrate --force && php artisan optimize && PHP_CLI_SERVER_WORKERS=4 php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "php artisan storage:link --force && php artisan migrate --force && php artisan optimize && PHP_CLI_SERVER_WORKERS=8 php artisan serve --host=0.0.0.0 --port=$PORT"

@@ -108,6 +108,7 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/products/create', [SellerProductController::class, 'create'])->name('products.create');
         Route::post('/products', [SellerProductController::class, 'store'])->name('products.store');
         Route::post('/products/ai-description', [SellerProductDescriptionAiController::class, 'store'])->middleware('throttle:ai-description')->name('products.ai-description');
+        Route::get('/products/{product}', fn ($product) => redirect()->route('seller.products.edit', $product));
         Route::get('/products/{product}/edit', [SellerProductController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product}', [SellerProductController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [SellerProductController::class, 'destroy'])->name('products.destroy');
