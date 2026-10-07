@@ -7,6 +7,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-warm-50 text-forest-950">
+    <div class="absolute left-4 top-4 z-20 sm:left-6 sm:top-6">
+        <x-back-button :fallback="route('marketplace.index')" />
+    </div>
     <div class="lg:grid lg:min-h-screen lg:grid-cols-2">
         {{-- Panel kiri: brand & value proposition --}}
         <aside class="relative hidden overflow-hidden bg-forest-950 lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">

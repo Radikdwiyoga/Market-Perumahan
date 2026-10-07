@@ -28,6 +28,7 @@ class BuyerOrderTest extends TestCase
         $response = $this->actingAs($buyer)->get(route('orders.index'));
 
         $response->assertOk()->assertSee('ORD-HISTORY-001')->assertDontSee('ORD-HISTORY-002')->assertSee('Warung Warga');
+        $this->actingAs($buyer)->get(route('orders.show', $order))->assertOk()->assertDontSee('Kirim review');
         $this->actingAs($buyer)->get(route('orders.show', $otherOrder))->assertForbidden();
     }
 

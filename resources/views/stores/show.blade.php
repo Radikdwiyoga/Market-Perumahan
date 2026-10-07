@@ -9,7 +9,10 @@
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <header class="sticky top-0 z-40 border-b border-warm-200/60 bg-warm-50/95 backdrop-blur">
         <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-10">
-            <x-brand-logo />
+            <div class="flex min-w-0 items-center gap-2">
+                <x-back-button :fallback="route('marketplace.index')" />
+                <x-brand-logo />
+            </div>
             <div class="flex items-center gap-2 sm:gap-3">
                 @auth
                     @if (auth()->user()->role === 'buyer')
@@ -31,7 +34,6 @@
     <main>
         <section class="bg-forest-950 px-5 py-12 text-white sm:px-6 lg:px-10 lg:py-16">
             <div class="mx-auto max-w-7xl">
-                <a href="{{ route('marketplace.index') }}" class="text-sm font-semibold text-lime-300 hover:text-lime-200">&larr; Kembali ke katalog</a>
                 <div class="mt-6 flex flex-wrap items-start justify-between gap-6">
                     <div class="flex items-start gap-5">
                         <div class="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-3xl bg-lime-300 text-3xl font-black text-forest-950">

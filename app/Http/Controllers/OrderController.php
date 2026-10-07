@@ -39,7 +39,11 @@ class OrderController extends Controller
             'canCancel' => $order->status !== 'cancelled' && $order->status !== 'completed' && $order->sellerOrders->every(
                 fn (SellerOrder $sellerOrder): bool => $sellerOrder->status === 'pending' && $sellerOrder->payment_status !== 'paid'
             ),
-            'reviewedProductIds' => Review::query()->where('buyer_id', auth()->id())->where('order_id', $order->id)->pluck('product_id')->all(),
+            'reviewsByProductId' => Review::query()
+                ->where('buyer_id', auth()->id())
+                ->where('order_id', $order->id)
+                ->get()
+                ->keyBy('product_id'),
         ]);
     }
 

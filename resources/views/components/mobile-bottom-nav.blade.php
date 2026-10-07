@@ -60,14 +60,14 @@
                     <span>Chat</span>
                 </a>
 
-                <a href="{{ route('dashboard') }}" class="{{ $tab }} {{ request()->routeIs('dashboard') ? $active : $idle }}">
-                    @if (request()->routeIs('dashboard'))<span class="absolute inset-x-6 top-0 h-0.5 rounded-b-full bg-forest-700"></span>@endif
+                <a href="{{ route('favorites.index') }}" class="{{ $tab }} {{ request()->routeIs('favorites.*') ? $active : $idle }}">
+                    @if (request()->routeIs('favorites.*'))<span class="absolute inset-x-6 top-0 h-0.5 rounded-b-full bg-forest-700"></span>@endif
                     <span class="relative flex h-6 w-6 items-center justify-center">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A1.125 1.125 0 0 1 18.375 21.75H5.625a1.125 1.125 0 0 1-1.124-1.632Z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.645 20.91a.75.75 0 0 0 .71 0C14.78 19.537 21 15.7 21 9.75A5.25 5.25 0 0 0 12 6.255 5.25 5.25 0 0 0 3 9.75c0 5.95 6.22 9.787 8.645 11.16Z"/>
                         </svg>
                     </span>
-                    <span>Profil</span>
+                    <span>Favorit</span>
                 </a>
             @elseif (auth()->user()->isSeller())
                 <a href="{{ route('marketplace.index') }}" class="{{ $tab }} {{ request()->routeIs('marketplace.*') ? $active : $idle }}">

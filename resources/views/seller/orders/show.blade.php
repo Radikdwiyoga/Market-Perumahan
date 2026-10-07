@@ -8,7 +8,7 @@
 </head>
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <main class="mx-auto max-w-4xl px-6 py-10">
-        <a href="{{ route('seller.orders.index') }}" class="text-sm font-bold text-forest-700">&larr; Kembali ke pesanan</a>
+        <x-back-button :fallback="route('seller.orders.index')" />
         @if (session('status'))
             <div class="mt-6 rounded-lg bg-forest-100 p-4 text-sm font-semibold text-forest-700">{{ session('status') }}</div>
         @endif

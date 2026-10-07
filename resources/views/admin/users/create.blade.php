@@ -8,7 +8,7 @@
 </head>
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <main class="mx-auto max-w-3xl px-6 py-10">
-        <a href="{{ route('admin.dashboard') }}" class="text-sm font-bold text-forest-700">&larr; Panel admin</a>
+        <x-back-button :fallback="route('admin.dashboard')" />
         <section class="mt-5 rounded-2xl bg-warm-white p-6 shadow-soft sm:p-8">
             <p class="text-sm font-bold uppercase tracking-[0.2em] text-forest-700">Manajemen pengguna</p><h1 class="mt-2 text-3xl font-black">Buat akun buyer atau seller</h1><p class="mt-2 text-sage-500">Akun langsung aktif dan dapat digunakan untuk login.</p>
             @if ($errors->any())<div class="mt-6 rounded-lg bg-red-50 p-4 text-sm text-red-700"><ul class="list-disc space-y-1 pl-5">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif

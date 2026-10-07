@@ -10,8 +10,8 @@
     <header class="border-b border-warm-200/60 bg-warm-white">
         <div class="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-5">
             <div class="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <x-back-button :fallback="route('chat.index')" />
                 <x-brand-logo />
-                <a href="{{ route('chat.index') }}" class="text-sm font-bold text-forest-700">&larr; Daftar chat</a>
                 <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-forest-700 text-lg font-black text-lime-200">{{ strtoupper(substr($counterpart->name, 0, 1)) }}</span>
                 <div class="min-w-0"><h1 class="truncate text-lg font-black sm:text-xl">{{ $counterpart->name }}</h1><p class="text-xs text-sage-500">@if ($conversation->sellerProfile->user_id === auth()->id()) Pembeli &middot; Blok {{ $counterpart->block }} No. {{ $counterpart->house_number }}@else Toko {{ $conversation->sellerProfile->store_name }}@endif</p></div>
             </div>
@@ -20,7 +20,7 @@
     </header>
     <main class="mx-auto max-w-4xl px-6 py-8">
         <section class="overflow-hidden rounded-2xl bg-warm-white shadow-soft">
-            <div class="h-[28rem] space-y-4 overflow-y-auto bg-forest-50/60 p-6">
+            <div class="h-112 space-y-4 overflow-y-auto bg-forest-50/60 p-6">
                 @forelse ($conversation->messages as $message)
                     @php($mine = $message->sender_id === auth()->id())
                     <div class="flex {{ $mine ? 'justify-end' : 'justify-start' }}">

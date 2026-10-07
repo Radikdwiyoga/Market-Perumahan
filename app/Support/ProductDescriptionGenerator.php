@@ -29,11 +29,13 @@ final class ProductDescriptionGenerator
         Kamu adalah copywriter marketplace barang untuk warga sebuah perumahan. Tugasmu menulis deskripsi produk berbahasa Indonesia berdasarkan foto yang dikirim.
 
         Aturan:
-        1. Tulis 3-5 kalimat singkat yang menjelaskan jenis barang, kondisi, warna atau bahan, dan kegunaannya.
-        2. Sebut hanya apa yang benar-benar terlihat di foto. Jangan mengarang merek, ukuran, berat, garansi, stok, atau harga.
-        3. Gunakan nada ramah dan mudah dibaca.
-        4. Tanpa markdown, tanpa judul, tanpa bullet, tanpa emoji, tanpa tanda kutip pembuka.
-        5. Balas hanya teks deskripsi.
+        1. Tulis 5-7 kalimat dalam satu paragraf, sekitar 70-100 kata, dengan uraian yang informatif dan tidak bertele-tele.
+        2. Jelaskan jenis barang dan ciri yang tampak seperti warna, bentuk, bahan, tekstur, pola, detail kemasan, atau aksesori.
+        3. Jelaskan kondisi dan kegunaan yang masuk akal berdasarkan foto; bedakan fakta yang terlihat dari perkiraan.
+        4. Sebut hanya informasi yang didukung foto atau petunjuk penjual. Jangan mengarang merek, ukuran, berat, kualitas, garansi, stok, atau harga.
+        5. Gunakan nada ramah, alami, dan membantu calon pembeli memahami produknya.
+        6. Jika foto tidak menampilkan cukup detail, buat deskripsi lebih singkat daripada menambahkan informasi yang tidak diketahui.
+        7. Tanpa markdown, judul, bullet, emoji, atau tanda kutip. Balas hanya teks deskripsi.
         PROMPT;
 
     /**
@@ -59,6 +61,7 @@ final class ProductDescriptionGenerator
 
         $payload = self::payload($image, $context);
         $failure = null;
+        $wasTruncated = false;
 
         foreach (self::modelChain() as $model) {
             $response = Http::timeout(30)
@@ -66,7 +69,17 @@ final class ProductDescriptionGenerator
                 ->post(self::endpoint($model), $payload);
 
             if ($response->successful()) {
-                $text = self::extractText($response->json());
+                $json = $response->json();
+
+                if (data_get($json, 'candidates.0.finishReason') === 'MAX_TOKENS') {
+                    Log::warning('Google AI memotong deskripsi produk.', ['model' => $model]);
+                    $failure = ['status' => 200, 'body' => 'truncated response'];
+                    $wasTruncated = true;
+
+                    continue;
+                }
+
+                $text = self::extractText($json);
 
                 if ($text !== '') {
                     return $text;
@@ -83,13 +96,17 @@ final class ProductDescriptionGenerator
                 'body' => $response->body(),
             ]);
 
-            // 400/401/403/404 = masalah konfigurasi yang tidak akan membaik dengan
-            // mencoba model lain, jadi langsung hentikan rantai.
-            if (! in_array($response->status(), [429, 500, 502, 503, 504], true)) {
+            // Error input dan autentikasi tidak akan membaik dengan model lain.
+            // Model yang tidak tersedia (404) dapat dicoba lewat kandidat cadangan.
+            if (! in_array($response->status(), [404, 429, 500, 502, 503, 504], true)) {
                 throw new RuntimeException(self::errorMessage($response->status()));
             }
 
             $failure = ['status' => $response->status(), 'body' => $response->body()];
+        }
+
+        if ($wasTruncated && ($failure['status'] ?? null) === 200) {
+            throw new RuntimeException('Deskripsi terpotong sebelum selesai. Silakan coba lagi.');
         }
 
         throw new RuntimeException(self::errorMessage($failure['status'] ?? 503));
@@ -114,7 +131,8 @@ final class ProductDescriptionGenerator
             ],
             'generationConfig' => [
                 'temperature' => 0.7,
-                'maxOutputTokens' => 500,
+                'maxOutputTokens' => 1200,
+                'thinkingConfig' => ['thinkingLevel' => 'LOW'],
                 'responseMimeType' => 'text/plain',
             ],
         ];

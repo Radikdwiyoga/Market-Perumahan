@@ -9,7 +9,7 @@
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <header class="border-b border-warm-200/60 bg-warm-white">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5">
-            <div class="flex items-center gap-3"><x-brand-logo /><div><a href="{{ route('dashboard') }}" class="text-sm font-bold text-forest-700">&larr; Dashboard</a><h1 class="mt-1 text-lg font-black sm:text-2xl">Chat</h1></div></div>
+            <div class="flex items-center gap-3"><x-back-button :fallback="route('dashboard')" /><x-brand-logo /><h1 class="text-lg font-black sm:text-2xl">Chat</h1></div>
             <a href="{{ route('marketplace.index') }}" class="text-sm font-semibold text-sage-600">Katalog</a>
         </div>
     </header>

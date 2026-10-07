@@ -73,7 +73,15 @@ class AuthenticationTest extends TestCase
 
         $response = $this->actingAs($buyer)->get(route('dashboard'));
 
-        $response->assertOk()->assertSee(route('marketplace.index'))->assertSee(route('cart.index'));
+        $response->assertOk()
+            ->assertSee(route('marketplace.index'))
+            ->assertSee(route('cart.index'))
+            ->assertSee(route('favorites.index'))
+            ->assertSee(route('orders.index'))
+            ->assertSee('data-back-button', false)
+            ->assertSee('aria-label="Kembali"', false)
+            ->assertSee('Lihat favorit')
+            ->assertSee('Lihat pesanan');
     }
 
     public function test_demo_buyer_can_login_from_seeded_account(): void

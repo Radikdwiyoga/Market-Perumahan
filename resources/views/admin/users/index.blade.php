@@ -10,7 +10,7 @@
 <main class="mx-auto max-w-6xl px-6 py-10">
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
-            <a href="{{ route('admin.dashboard') }}" class="text-sm font-bold text-forest-700">&larr; Panel admin</a>
+            <x-back-button :fallback="route('admin.dashboard')" />
             <h1 class="mt-2 text-3xl font-black">Manajemen pengguna</h1>
             <p class="mt-1 text-sage-500">Kelola buyer, seller, dan verifikasi toko.</p>
         </div>

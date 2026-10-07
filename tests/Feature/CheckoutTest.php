@@ -73,7 +73,12 @@ class CheckoutTest extends TestCase
             ->assertOk()
             ->assertSee('Transfer bank')
             ->assertSee('QRIS')
-            ->assertSee('COD');
+            ->assertSee('COD')
+            ->assertSee('aria-label="Transfer bank"', false)
+            ->assertSee('data-bank-logo', false)
+            ->assertSee('data-copy-text="1234567890"', false)
+            ->assertSee('aria-label="Salin nomor rekening BRI"', false)
+            ->assertSee('data-copy-status', false);
     }
 
     public function test_checkout_disables_qris_when_a_store_has_not_uploaded_one(): void

@@ -9,7 +9,10 @@
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <header class="sticky top-0 z-40 border-b border-warm-200/60 bg-warm-white/95 backdrop-blur">
         <nav class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5">
-            <x-brand-logo />
+            <div class="flex min-w-0 items-center gap-2">
+                <x-back-button :fallback="route('dashboard')" />
+                <x-brand-logo />
+            </div>
             <div class="flex items-center gap-2">
                 <a href="{{ route('marketplace.index') }}" class="rounded-lg border border-warm-200 px-3 py-2 text-sm font-semibold hover:bg-warm-50">Katalog</a>
                 <a href="{{ route('dashboard') }}" class="rounded-full bg-forest-700 px-4 py-2 text-sm font-semibold text-white hover:bg-forest-800 sm:px-5">Dashboard</a>

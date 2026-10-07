@@ -8,6 +8,7 @@
 </head>
 <body class="min-h-screen bg-warm-50 px-4 py-10 text-forest-950 sm:px-6">
     <main class="mx-auto max-w-2xl">
+        <x-back-button :fallback="route('marketplace.index')" />
         <x-brand-logo :large="true" :compact="false" class="mb-8" />
         <div class="rounded-3xl bg-warm-white p-7 shadow-xl shadow-forest-900/5 ring-1 ring-warm-200/50 sm:p-10">
             <p class="text-sm font-bold uppercase tracking-[0.2em] text-forest-700">Dukung UMKM, dari rumah Anda</p>

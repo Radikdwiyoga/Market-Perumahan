@@ -9,7 +9,10 @@
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <header class="sticky top-0 z-40 border-b border-warm-200/60 bg-warm-50/95 backdrop-blur">
         <nav class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-10">
-            <x-brand-logo />
+            <div class="flex min-w-0 items-center gap-2">
+                <x-back-button :fallback="route('marketplace.index')" />
+                <x-brand-logo />
+            </div>
             <div class="flex items-center gap-2 sm:gap-3">
                 @auth
                     @if (auth()->user()->role === 'buyer')

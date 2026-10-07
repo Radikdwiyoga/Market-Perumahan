@@ -10,7 +10,7 @@
     <main class="mx-auto max-w-4xl px-6 py-10">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <a href="{{ route('dashboard') }}" class="text-sm font-bold text-forest-700">&larr; Dashboard</a>
+                <x-back-button :fallback="route('dashboard')" />
                 <h1 class="mt-2 text-3xl font-black">Notifikasi</h1>
                 <p class="mt-1 text-sage-500"><strong class="text-forest-700">{{ $unreadCount }}</strong> belum dibaca</p>
             </div>

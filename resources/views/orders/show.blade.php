@@ -8,7 +8,10 @@
 </head>
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-10">
-        <x-brand-logo />
+        <div class="flex items-center gap-2">
+            <x-back-button :fallback="route('orders.index')" />
+            <x-brand-logo />
+        </div>
         @if (session('status'))
             <div class="mt-6 rounded-lg bg-forest-100 p-4 text-sm font-semibold text-forest-700">{{ session('status') }}</div>
         @endif
@@ -120,7 +123,16 @@
                 <h2 class="mt-1 text-xl font-black">Rating dan review produk</h2>
                 <div class="mt-5 space-y-5">
                     @foreach ($order->items as $item)
-                        @if (!in_array($item->product_id, $reviewedProductIds, true))
+                        @if ($reviewsByProductId->has($item->product_id))
+                            @php($review = $reviewsByProductId->get($item->product_id))
+                            <article class="border-t border-warm-100 pt-5 first:border-0 first:pt-0">
+                                <p class="font-bold">{{ $item->product_name }}</p>
+                                <p class="mt-2 text-sm font-bold text-amber-600">Review Anda: {{ $review->rating }}/5</p>
+                                @if ($review->review)
+                                    <p class="mt-2 text-sm leading-6 text-sage-600">{{ $review->review }}</p>
+                                @endif
+                            </article>
+                        @else
                             <form action="{{ route('orders.reviews.store', $order) }}" method="POST" class="border-t border-warm-100 pt-5 first:border-0 first:pt-0">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $item->product_id }}">

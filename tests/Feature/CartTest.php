@@ -33,6 +33,23 @@ class CartTest extends TestCase
         $this->assertSame(1, CartItem::query()->count());
     }
 
+    public function test_cart_page_exposes_live_price_targets_for_each_item(): void
+    {
+        $buyer = User::factory()->create();
+        $product = $this->product();
+        $this->actingAs($buyer)->post(route('cart.store', $product), ['quantity' => 2]);
+
+        $response = $this->actingAs($buyer)->get(route('cart.index'));
+
+        $response->assertOk()
+            ->assertSee('data-cart-line', false)
+            ->assertSee('data-unit-price="76000"', false)
+            ->assertSee('data-cart-quantity', false)
+            ->assertSee('data-cart-line-total', false)
+            ->assertSee('data-cart-summary', false)
+            ->assertSee('Rp152.000');
+    }
+
     public function test_buyer_can_add_a_note_per_cart_item_and_it_is_removed_with_the_item(): void
     {
         $buyer = User::factory()->create();

@@ -9,7 +9,7 @@
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <header class="border-b border-warm-200 bg-warm-white">
         <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-5">
-            <div class="flex items-center gap-3"><x-brand-logo /><h1 class="text-xl font-black sm:text-2xl">Produk {{ $store->store_name }}</h1></div>
+            <div class="flex items-center gap-3"><x-back-button :fallback="route('dashboard')" /><x-brand-logo /><h1 class="text-xl font-black sm:text-2xl">Produk {{ $store->store_name }}</h1></div>
             <div class="flex items-center gap-3"><a href="{{ route('dashboard') }}" class="text-sm font-semibold text-sage-600">Dashboard</a><form action="{{ route('logout') }}" method="POST">@csrf<button class="rounded-lg border border-warm-200 px-4 py-2 text-sm font-semibold">Keluar</button></form></div>
         </div>
     </header>

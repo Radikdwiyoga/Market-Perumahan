@@ -1,3 +1,126 @@
+(() => {
+    'use strict';
+
+    document.addEventListener('click', (event) => {
+        const backButton = event.target.closest('[data-back-button]');
+
+        if (!backButton || !document.referrer) {
+            return;
+        }
+
+        try {
+            const previousPage = new URL(document.referrer);
+
+            if (previousPage.origin === window.location.origin && previousPage.href !== window.location.href) {
+                event.preventDefault();
+                window.history.back();
+            }
+        } catch {
+            return;
+        }
+    });
+
+    document.querySelectorAll('a[href]').forEach((anchor) => {
+        if (! anchor.textContent.trim().startsWith('\u2190')) {
+            return;
+        }
+
+        anchor.dataset.backButton = '';
+        anchor.setAttribute('aria-label', 'Kembali');
+        anchor.setAttribute('title', 'Kembali');
+        anchor.className = 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-warm-200 bg-warm-white text-forest-700 transition hover:bg-forest-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest-700';
+        anchor.replaceChildren();
+
+        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        icon.setAttribute('class', 'h-5 w-5');
+        icon.setAttribute('viewBox', '0 0 24 24');
+        icon.setAttribute('fill', 'none');
+        icon.setAttribute('stroke', 'currentColor');
+        icon.setAttribute('stroke-width', '1.8');
+        icon.setAttribute('aria-hidden', 'true');
+
+        const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        iconPath.setAttribute('stroke-linecap', 'round');
+        iconPath.setAttribute('stroke-linejoin', 'round');
+        iconPath.setAttribute('d', 'M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18');
+        icon.append(iconPath);
+        anchor.append(icon);
+    });
+
+    document.querySelectorAll('[data-copy-text]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const status = button.parentElement.querySelector('[data-copy-status]');
+            const value = button.dataset.copyText ?? '';
+
+            try {
+                if (navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(value);
+                } else {
+                    const temporaryInput = document.createElement('textarea');
+                    temporaryInput.value = value;
+                    temporaryInput.setAttribute('readonly', '');
+                    temporaryInput.style.position = 'fixed';
+                    temporaryInput.style.opacity = '0';
+                    document.body.append(temporaryInput);
+                    temporaryInput.select();
+                    const copied = document.execCommand('copy');
+                    temporaryInput.remove();
+
+                    if (!copied) {
+                        throw new Error('Clipboard is unavailable.');
+                    }
+                }
+
+                status.textContent = 'Tersalin';
+            } catch {
+                status.textContent = 'Gagal menyalin';
+            }
+        });
+    });
+})();
+
+(() => {
+    'use strict';
+
+    const quantityFields = [...document.querySelectorAll('[data-cart-quantity]')];
+    const summary = document.querySelector('[data-cart-summary]');
+
+    if (quantityFields.length === 0 || !summary) {
+        return;
+    }
+
+    const currency = new Intl.NumberFormat('id-ID');
+
+    const updateTotals = () => {
+        const lineTotals = [...document.querySelectorAll('[data-cart-line]')].map((line) => {
+            const quantity = Number(line.querySelector('[data-cart-quantity]').value);
+
+            if (!Number.isInteger(quantity) || quantity < 1) {
+                return null;
+            }
+
+            return {
+                line,
+                total: Number(line.dataset.unitPrice) * quantity,
+            };
+        });
+
+        if (lineTotals.some((lineTotal) => lineTotal === null)) {
+            return;
+        }
+
+        const subtotal = lineTotals.reduce((sum, lineTotal) => sum + lineTotal.total, 0);
+
+        lineTotals.forEach(({ line, total }) => {
+            line.querySelector('[data-cart-line-total]').textContent = `Rp${currency.format(total)}`;
+        });
+
+        summary.textContent = `Rp${currency.format(subtotal)}`;
+    };
+
+    quantityFields.forEach((field) => field.addEventListener('input', updateTotals));
+})();
+
 // Real-time notifications via Server-Sent Events (PRD §70).
 //
 // Client hanya aktif pada halaman yang memuat elemen [data-notifications-source]
@@ -15,6 +138,12 @@
 
     const useFallbackImage = (image) => {
         if (!(image instanceof HTMLImageElement) || image.dataset.fallbackApplied) {
+            return;
+        }
+
+        if (image.hasAttribute('data-bank-logo')) {
+            image.hidden = true;
+
             return;
         }
 

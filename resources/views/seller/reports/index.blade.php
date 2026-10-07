@@ -10,7 +10,7 @@
     <main class="mx-auto max-w-6xl px-6 py-10">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <a href="{{ route('dashboard') }}" class="text-sm font-bold text-forest-700">&larr; Dashboard</a>
+                <x-back-button :fallback="route('dashboard')" />
                 <h1 class="mt-2 text-3xl font-black">Laporan penjualan</h1>
                 <p class="mt-1 text-sage-500">{{ $store->store_name }} &middot; {{ $periodLabel }}</p>
             </div>

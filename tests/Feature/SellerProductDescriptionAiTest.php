@@ -56,7 +56,10 @@ class SellerProductDescriptionAiTest extends TestCase
             return $request->url() === 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=test-key'
                 && data_get($parts, '0.inline_data.mime_type') === 'image/jpeg'
                 && str_contains(data_get($parts, '1.text'), 'Keripik Singkong')
-                && str_contains(data_get($parts, '1.text'), 'Camilan');
+                && str_contains(data_get($parts, '1.text'), 'Camilan')
+                && str_contains(data_get($parts, '1.text'), '70-100 kata')
+                && $request['generationConfig']['maxOutputTokens'] === 1200
+                && $request['generationConfig']['thinkingConfig']['thinkingLevel'] === 'LOW';
         });
     }
 
@@ -230,6 +233,62 @@ class SellerProductDescriptionAiTest extends TestCase
             ->assertJsonPath('message', 'API key Google AI ditolak. Periksa kembali GOOGLE_AI_API_KEY.');
 
         Http::assertSentCount(1);
+    }
+
+    public function test_generator_falls_back_when_the_primary_model_is_not_available(): void
+    {
+        config(['services.google_ai.fallback_models' => ['gemini-3.6-flash']]);
+
+        Http::fake([
+            '*/models/gemini-3.8-flash:generateContent*' => Http::response([
+                'error' => ['code' => 404, 'status' => 'NOT_FOUND'],
+            ], 404),
+            '*/models/gemini-3.6-flash:generateContent*' => Http::response([
+                'candidates' => [['content' => ['parts' => [['text' => 'Produk siap digunakan.']]]]],
+            ]),
+        ]);
+
+        $seller = $this->seller();
+
+        $this->actingAs($seller)
+            ->postJson(route('seller.products.ai-description'), [
+                'image' => UploadedFile::fake()->image('barang.jpg'),
+            ])
+            ->assertOk()
+            ->assertJsonPath('description', 'Produk siap digunakan.');
+
+        Http::assertSentCount(2);
+    }
+
+    public function test_generator_uses_a_fallback_when_primary_output_is_truncated(): void
+    {
+        config(['services.google_ai.fallback_models' => ['gemini-3.6-flash']]);
+
+        Http::fake([
+            '*/models/gemini-3.8-flash:generateContent*' => Http::response([
+                'candidates' => [[
+                    'finishReason' => 'MAX_TOKENS',
+                    'content' => ['parts' => [['text' => 'Beras pulen 5 kg ini hadir untuk memenuhi kebutuhan']]],
+                ]],
+            ]),
+            '*/models/gemini-3.6-flash:generateContent*' => Http::response([
+                'candidates' => [[
+                    'finishReason' => 'STOP',
+                    'content' => ['parts' => [['text' => 'Beras pulen 5 kg ini cocok untuk kebutuhan makan harian keluarga. Dikemas praktis dan dapat disimpan sebagai persediaan di rumah.']]],
+                ]],
+            ]),
+        ]);
+
+        $seller = $this->seller();
+
+        $this->actingAs($seller)
+            ->postJson(route('seller.products.ai-description'), [
+                'image' => UploadedFile::fake()->image('beras.jpg'),
+            ])
+            ->assertOk()
+            ->assertJsonPath('description', 'Beras pulen 5 kg ini cocok untuk kebutuhan makan harian keluarga. Dikemas praktis dan dapat disimpan sebagai persediaan di rumah.');
+
+        Http::assertSentCount(2);
     }
 
     public function test_request_fails_when_the_configured_model_is_retired(): void

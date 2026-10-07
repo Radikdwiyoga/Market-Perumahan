@@ -4,9 +4,22 @@
     'unreadChats' => 0,
 ])
 
+@php
+    $backFallback = match (true) {
+        request()->routeIs('seller.*') => route('dashboard'),
+        request()->routeIs('admin.*') => route('marketplace.index'),
+        request()->routeIs('dashboard') => route('marketplace.index'),
+        request()->routeIs('marketplace.*') => auth()->check() ? route('dashboard') : route('marketplace.index'),
+        default => route('marketplace.index'),
+    };
+@endphp
+
 <header class="sticky top-0 z-40 border-b border-warm-200/60 bg-warm-white/95 backdrop-blur">
     <nav class="mx-auto flex w-full max-w-6xl items-center justify-between gap-1 px-4 py-3 sm:gap-3 sm:px-6 sm:py-3.5">
-        <x-brand-logo />
+        <div class="flex min-w-0 items-center gap-2">
+            <x-back-button :fallback="$backFallback" />
+            <x-brand-logo />
+        </div>
 
         <div class="flex items-center gap-1 sm:gap-2 lg:gap-3">
             @auth
@@ -19,6 +32,18 @@
                             <span class="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-bold text-white">{{ $cartCount > 99 ? '99+' : $cartCount }}</span>
                         @endif
                     </a>
+
+                        <a href="{{ route('favorites.index') }}" class="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-50 text-forest-700 shadow-soft ring-1 ring-warm-200 transition hover:bg-forest-700 hover:text-white sm:flex sm:h-10 sm:w-10" title="Favorit" aria-label="Favorit">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11.645 20.91a.75.75 0 0 0 .71 0C14.78 19.537 21 15.7 21 9.75A5.25 5.25 0 0 0 12 6.255 5.25 5.25 0 0 0 3 9.75c0 5.95 6.22 9.787 8.645 11.16Z"/>
+                            </svg>
+                        </a>
+
+                        <a href="{{ route('orders.index') }}" class="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-warm-50 text-forest-700 shadow-soft ring-1 ring-warm-200 transition hover:bg-forest-700 hover:text-white sm:flex sm:h-10 sm:w-10" title="Pesanan saya" aria-label="Pesanan saya">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z"/>
+                            </svg>
+                        </a>
                 @endif
 
                 @if (!auth()->user()->isAdmin())

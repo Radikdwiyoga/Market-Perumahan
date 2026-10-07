@@ -8,7 +8,7 @@
 </head>
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <main class="mx-auto max-w-2xl px-6 py-10">
-        <a href="{{ route('dashboard') }}" class="text-sm font-bold text-forest-700">&larr; Dashboard</a>
+        <x-back-button :fallback="route('dashboard')" />
         <section class="mt-5 rounded-2xl bg-warm-white p-6 shadow-soft sm:p-8">
             <p class="text-sm font-bold uppercase tracking-[0.2em] text-forest-700">Verifikasi pedagang</p>
             <h1 class="mt-2 text-3xl font-black">Ajukan toko Anda</h1>

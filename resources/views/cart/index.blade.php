@@ -22,17 +22,17 @@
                         <section class="overflow-hidden rounded-2xl bg-warm-white shadow-soft"><div class="border-b border-warm-100 px-4 py-4 sm:px-6 sm:py-5"><p class="text-xs font-bold uppercase tracking-wider text-sage-400">Toko</p><h2 class="mt-1 text-lg font-black sm:text-xl">{{ $store->store_name }}</h2></div>
                             <div class="divide-y divide-warm-100">
                                 @foreach ($group as $product)
-                                    <div class="border-b border-warm-100 px-4 py-4 last:border-0 sm:px-6 sm:py-5">
+                                    <div class="border-b border-warm-100 px-4 py-4 last:border-0 sm:px-6 sm:py-5" data-cart-line data-unit-price="{{ $product->effectivePrice() }}">
                                         <div class="flex flex-wrap items-start gap-3 sm:gap-4">
                                             <div class="min-w-0 flex-1"><h3 class="flex items-center gap-3 font-bold">@if ($product->image)<img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" class="h-10 w-10 shrink-0 rounded-lg object-cover">@endif<span class="text-sm sm:text-base">{{ $product->name }}</span></h3><p class="mt-1 text-sm text-sage-500">@if ($product->hasDiscount())<span class="line-through">Rp{{ number_format($product->price, 0, ',', '.') }}</span> <strong class="text-red-600">Rp{{ number_format($product->effectivePrice(), 0, ',', '.') }}</strong>@else Rp{{ number_format($product->effectivePrice(), 0, ',', '.') }}@endif / item</p></div>
-                                            <strong class="w-24 text-right text-forest-700 sm:w-28">Rp{{ number_format($product->effectivePrice() * ($cartQuantities[$product->id] ?? 0), 0, ',', '.') }}</strong>
+                                            <strong data-cart-line-total class="w-28 whitespace-nowrap text-right text-forest-700">Rp{{ number_format($product->effectivePrice() * ($cartQuantities[$product->id] ?? 0), 0, ',', '.') }}</strong>
                                             <form action="{{ route('cart.destroy', $product) }}" method="POST">@csrf @method('DELETE')<button class="text-sm font-bold text-red-700">Hapus</button></form>
                                         </div>
-                                        <form action="{{ route('cart.update', $product) }}" method="POST" class="mt-4 flex flex-wrap items-end gap-3">
+                                        <form action="{{ route('cart.update', $product) }}" method="POST" class="mt-4 grid gap-3 sm:grid-cols-[6rem_minmax(0,1fr)_auto] sm:items-end">
                                             @csrf @method('PUT')
-                                            <label class="block text-xs font-semibold text-sage-500">Jumlah<input type="number" name="quantity" min="1" max="{{ $product->stock }}" value="{{ $cartQuantities[$product->id] ?? 1 }}" class="mt-1 w-20 rounded-lg border border-warm-200 text-center" /></label>
-                                            <label class="block min-w-52 flex-1 text-xs font-semibold text-sage-500">Catatan untuk penjual<textarea name="note" rows="1" maxlength="500" placeholder="mis. potong tipis, tanpa plastik..." class="mt-1 w-full resize-none rounded-lg border border-warm-200 text-sm">{{ $cartNotes[$product->id] ?? '' }}</textarea></label>
-                                            <button class="rounded-lg bg-forest-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-forest-800">Simpan</button>
+                                            <label class="block text-sm font-semibold text-sage-600">Jumlah<input type="number" name="quantity" min="1" max="{{ $product->stock }}" value="{{ $cartQuantities[$product->id] ?? 1 }}" data-cart-quantity class="mt-1 h-11 w-full rounded-lg border border-warm-200 px-3 text-center text-sm" /></label>
+                                            <label class="block min-w-0 text-sm font-semibold text-sage-600">Catatan untuk penjual<textarea name="note" rows="2" maxlength="500" placeholder="mis. potong tipis, tanpa plastik..." class="mt-1 min-h-11 w-full resize-y rounded-lg border border-warm-200 px-3 py-2 text-sm leading-5 placeholder:text-sage-400">{{ $cartNotes[$product->id] ?? '' }}</textarea></label>
+                                            <button class="h-11 rounded-lg bg-forest-700 px-5 text-sm font-bold text-white hover:bg-forest-800">Simpan</button>
                                         </form>
                                     </div>
                                 @endforeach
@@ -40,7 +40,7 @@
                         </section>
                     @endforeach
                 </div>
-                <aside class="h-fit rounded-2xl bg-forest-950 p-6 text-white lg:sticky lg:top-24"><p class="text-sm text-forest-200">Ringkasan</p><div class="mt-5 flex items-center justify-between border-b border-white/20 pb-5"><span>Subtotal</span><strong>Rp{{ number_format($total, 0, ',', '.') }}</strong></div><a href="{{ route('checkout.create') }}" class="mt-6 block w-full rounded-xl bg-lime-300 px-4 py-3 text-center font-bold text-forest-950 hover:bg-lime-200">Lanjut checkout</a></aside>
+                <aside class="h-fit rounded-2xl bg-forest-950 p-6 text-white lg:sticky lg:top-24"><p class="text-sm text-forest-200">Ringkasan</p><div class="mt-5 flex items-center justify-between border-b border-white/20 pb-5"><span>Subtotal</span><strong data-cart-summary aria-live="polite">Rp{{ number_format($total, 0, ',', '.') }}</strong></div><a href="{{ route('checkout.create') }}" class="mt-6 block w-full rounded-xl bg-lime-300 px-4 py-3 text-center font-bold text-forest-950 hover:bg-lime-200">Lanjut checkout</a></aside>
             </div>
         @endif
     </main>

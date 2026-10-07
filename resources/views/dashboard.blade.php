@@ -20,6 +20,26 @@
             <article class="rounded-xl bg-warm-white p-6 shadow-soft"><p class="text-sm text-sage-500">Status akun</p><p class="mt-2 text-xl font-bold text-forest-700">{{ ucfirst($user->status) }}</p></article>
             <article class="rounded-xl bg-warm-white p-6 shadow-soft"><p class="text-sm text-sage-500">Alamat</p><p class="mt-2 text-xl font-bold">{{ $user->address }}</p></article>
         </section>
+        @if ($user->role === 'buyer')
+            <section class="mt-8">
+                <div>
+                    <p class="text-sm font-bold uppercase tracking-wider text-forest-700">Aktivitas belanja</p>
+                    <h2 class="mt-2 text-2xl font-black">Favorit dan pesanan</h2>
+                </div>
+                <div class="mt-5 grid gap-4 md:grid-cols-2">
+                    <article class="rounded-xl bg-warm-white p-6 shadow-soft">
+                        <p class="text-lg font-bold">Produk favorit</p>
+                        <p class="mt-2 text-sm leading-6 text-sage-500">Temukan kembali produk yang Anda simpan dan lanjutkan belanja.</p>
+                        <a href="{{ route('favorites.index') }}" class="mt-5 inline-flex rounded-lg border border-warm-200 px-4 py-2.5 text-sm font-bold text-forest-700 hover:bg-warm-50">Lihat favorit</a>
+                    </article>
+                    <article class="rounded-xl bg-warm-white p-6 shadow-soft">
+                        <p class="text-lg font-bold">Riwayat pesanan</p>
+                        <p class="mt-2 text-sm leading-6 text-sage-500">Pantau status pesanan. Setelah selesai, buka detail untuk memberi atau melihat review produk.</p>
+                        <a href="{{ route('orders.index') }}" class="mt-5 inline-flex rounded-lg bg-forest-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-forest-800">Lihat pesanan</a>
+                    </article>
+                </div>
+            </section>
+        @endif
         @if ($user->isSeller() && $store?->isVerificationPending())
             <section class="mt-8 rounded-2xl border border-amber-300 bg-amber-50 p-6 shadow-soft">
                 <div class="flex flex-wrap items-start justify-between gap-4">
