@@ -46,3 +46,4 @@ class SponsoredAd extends Model
         return $this->status === 'active';
     }
 }
+

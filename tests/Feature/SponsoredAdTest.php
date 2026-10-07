@@ -96,3 +96,4 @@ class SponsoredAdTest extends TestCase
         $response->assertDontSee('Sponsor Nonaktif');
     }
 }
+

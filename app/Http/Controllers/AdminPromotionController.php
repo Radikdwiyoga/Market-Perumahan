@@ -177,3 +177,4 @@ class AdminPromotionController extends Controller
         abort_unless(auth()->user()->isAdmin(), 403);
     }
 }
+
