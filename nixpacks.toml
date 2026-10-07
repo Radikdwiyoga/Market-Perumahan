@@ -1,5 +1,5 @@
 [variables]
-PHP_CLI_SERVER_WORKERS = "4"
+PHP_CLI_SERVER_WORKERS = "8"
 
 [phases.setup]
 nixPkgs = ["php83", "php83Extensions.pdo_pgsql", "php83Extensions.pgsql", "nodejs_22"]
