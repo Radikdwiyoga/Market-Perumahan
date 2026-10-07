@@ -50,6 +50,62 @@
             </div>
         </section>
 
+        @if (isset($sponsoredAds) && $sponsoredAds->isNotEmpty())
+            <section class="mx-auto max-w-7xl px-4 pt-8 sm:px-6 sm:pt-12 lg:px-10">
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-lime-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-forest-800">
+                            <span class="h-1.5 w-1.5 rounded-full bg-lime-500 animate-pulse"></span>
+                            Sponsor & Promosi
+                        </span>
+                        <h2 class="text-sm font-bold text-sage-600 sm:text-base">Dukungan Sponsor Warga</h2>
+                    </div>
+                </div>
+
+                <div class="grid gap-4 {{ $sponsoredAds->count() > 1 ? 'sm:grid-cols-2 lg:grid-cols-2' : '' }}">
+                    @foreach ($sponsoredAds as $ad)
+                        <div class="group relative overflow-hidden rounded-2xl border border-warm-200/80 bg-warm-white shadow-soft transition hover:shadow-card">
+                            @if ($ad->link_url)
+                                <a href="{{ $ad->link_url }}" target="_blank" rel="noopener noreferrer" class="block">
+                            @endif
+
+                            <div class="relative aspect-16/9 w-full overflow-hidden bg-forest-950 sm:aspect-21/9">
+                                @if ($ad->isVideo())
+                                    <video src="{{ asset('storage/'.$ad->media_path) }}" autoplay loop muted playsinline class="h-full w-full object-cover"></video>
+                                    <span class="absolute top-3 right-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur">
+                                        🎬 Sponsor
+                                    </span>
+                                @else
+                                    <img src="{{ asset('storage/'.$ad->media_path) }}" alt="{{ $ad->title }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]">
+                                    <span class="absolute top-3 right-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur">
+                                        ✨ Sponsor
+                                    </span>
+                                @endif
+
+                                @if ($ad->title || $ad->caption)
+                                    <div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 via-black/40 to-transparent p-4 sm:p-5 text-white">
+                                        <p class="text-base font-black sm:text-lg">{{ $ad->title }}</p>
+                                        @if ($ad->caption)
+                                            <p class="mt-0.5 text-xs text-white/90 sm:text-sm line-clamp-2">{{ $ad->caption }}</p>
+                                        @endif
+                                        @if ($ad->link_url)
+                                            <span class="mt-2 inline-flex items-center gap-1 text-xs font-bold text-lime-300 underline group-hover:text-lime-200">
+                                                Lihat promosi &rarr;
+                                            </span>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+
+                            @if ($ad->link_url)
+                                </a>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <div><p class="text-sm font-bold uppercase tracking-[0.2em] text-forest-700">Jelajahi</p><h2 class="mt-2 text-2xl font-black sm:text-3xl">Belanja sesuai kebutuhan</h2></div>

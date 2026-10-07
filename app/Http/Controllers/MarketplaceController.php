@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\SellerProfile;
+use App\Models\SponsoredAd;
 use App\Support\CartService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -47,6 +48,11 @@ class MarketplaceController extends Controller
             'search' => $search,
             'selectedCategory' => $selectedCategory,
             'cartCount' => auth()->check() && auth()->user()->role === 'buyer' ? $this->carts->count(auth()->user()) : 0,
+            'sponsoredAds' => SponsoredAd::query()
+                ->where('status', 'active')
+                ->orderBy('order')
+                ->latest()
+                ->get(),
         ]);
     }
 }
