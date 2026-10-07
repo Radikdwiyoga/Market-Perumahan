@@ -8,7 +8,10 @@
 </head>
 <body class="min-h-screen bg-warm-50 text-forest-950">
     <main class="mx-auto max-w-2xl px-6 py-10">
-        <a href="{{ route('admin.promotions.index') }}" class="text-sm font-bold text-forest-700 hover:underline">&larr; Kembali ke daftar iklan</a>
+        <a href="{{ route('admin.promotions.index') }}" class="inline-flex items-center gap-1 text-sm font-bold text-forest-700 hover:underline">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Kembali ke daftar iklan
+        </a>
 
         <section class="mt-5 rounded-2xl bg-warm-white p-6 shadow-soft sm:p-8">
             <p class="text-sm font-bold uppercase tracking-[0.2em] text-forest-700">Promosi & Sponsor</p>
@@ -107,3 +110,4 @@
     </script>
 </body>
 </html>
+

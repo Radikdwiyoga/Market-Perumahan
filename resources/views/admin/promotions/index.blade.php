@@ -10,7 +10,10 @@
     <main class="mx-auto max-w-6xl px-6 py-10">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
-                <a href="{{ route('admin.dashboard') }}" class="text-sm font-bold text-forest-700 hover:underline">&larr; Panel admin</a>
+                <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center gap-1 text-sm font-bold text-forest-700 hover:underline">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Panel admin
+                </a>
                 <h1 class="mt-2 text-3xl font-black">Iklan & Sponsor Katalog</h1>
                 <p class="mt-1 text-sm text-sage-500">Kelola promosi sponsor berupa foto atau video singkat yang tampil di halaman katalog utama.</p>
             </div>
@@ -124,3 +127,4 @@
     </main>
 </body>
 </html>
+
