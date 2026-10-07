@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -16,14 +17,25 @@ return new class extends Migration
             $table->string('rejection_reason')->nullable()->after('qris_image_snapshot');
         });
 
-        Schema::table('seller_orders', function (Blueprint $table) {
-            $table->timestamp('payment_due_at')->nullable()->after('pickup_code');
-            $table->enum('shipping_status', ['pending', 'processing', 'ready', 'out_for_delivery', 'delivered', 'completed'])->default('pending')->change();
-        });
+        if (DB::getDriverName() === 'pgsql') {
+            Schema::table('seller_orders', function (Blueprint $table) {
+                $table->timestamp('payment_due_at')->nullable()->after('pickup_code');
+            });
+            DB::statement('ALTER TABLE seller_orders DROP CONSTRAINT IF EXISTS seller_orders_shipping_status_check');
+            DB::statement("ALTER TABLE seller_orders ADD CONSTRAINT seller_orders_shipping_status_check CHECK (shipping_status IN ('pending', 'processing', 'ready', 'out_for_delivery', 'delivered', 'completed'))");
 
-        Schema::table('shipments', function (Blueprint $table) {
-            $table->enum('status', ['pending', 'processing', 'ready', 'out_for_delivery', 'delivered', 'completed'])->default('pending')->change();
-        });
+            DB::statement('ALTER TABLE shipments DROP CONSTRAINT IF EXISTS shipments_status_check');
+            DB::statement("ALTER TABLE shipments ADD CONSTRAINT shipments_status_check CHECK (status IN ('pending', 'processing', 'ready', 'out_for_delivery', 'delivered', 'completed'))");
+        } else {
+            Schema::table('seller_orders', function (Blueprint $table) {
+                $table->timestamp('payment_due_at')->nullable()->after('pickup_code');
+                $table->enum('shipping_status', ['pending', 'processing', 'ready', 'out_for_delivery', 'delivered', 'completed'])->default('pending')->change();
+            });
+
+            Schema::table('shipments', function (Blueprint $table) {
+                $table->enum('status', ['pending', 'processing', 'ready', 'out_for_delivery', 'delivered', 'completed'])->default('pending')->change();
+            });
+        }
     }
 
     /**
@@ -31,14 +43,26 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('shipments', function (Blueprint $table) {
-            $table->enum('status', ['pending', 'processing', 'ready', 'completed'])->default('pending')->change();
-        });
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE shipments DROP CONSTRAINT IF EXISTS shipments_status_check');
+            DB::statement("ALTER TABLE shipments ADD CONSTRAINT shipments_status_check CHECK (status IN ('pending', 'processing', 'ready', 'completed'))");
 
-        Schema::table('seller_orders', function (Blueprint $table) {
-            $table->enum('shipping_status', ['pending', 'processing', 'ready', 'completed'])->default('pending')->change();
-            $table->dropColumn('payment_due_at');
-        });
+            DB::statement('ALTER TABLE seller_orders DROP CONSTRAINT IF EXISTS seller_orders_shipping_status_check');
+            DB::statement("ALTER TABLE seller_orders ADD CONSTRAINT seller_orders_shipping_status_check CHECK (shipping_status IN ('pending', 'processing', 'ready', 'completed'))");
+
+            Schema::table('seller_orders', function (Blueprint $table) {
+                $table->dropColumn('payment_due_at');
+            });
+        } else {
+            Schema::table('shipments', function (Blueprint $table) {
+                $table->enum('status', ['pending', 'processing', 'ready', 'completed'])->default('pending')->change();
+            });
+
+            Schema::table('seller_orders', function (Blueprint $table) {
+                $table->enum('shipping_status', ['pending', 'processing', 'ready', 'completed'])->default('pending')->change();
+                $table->dropColumn('payment_due_at');
+            });
+        }
 
         Schema::table('payments', function (Blueprint $table) {
             $table->dropColumn(['qris_image_snapshot', 'rejection_reason']);
