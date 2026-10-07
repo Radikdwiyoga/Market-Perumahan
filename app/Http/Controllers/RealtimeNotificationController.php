@@ -35,7 +35,15 @@ class RealtimeNotificationController extends Controller
         $maxWait = (int) config('marketplace.realtime.max_wait', 25);
         $interval = (int) config('marketplace.realtime.poll_interval', 3);
 
+        if ($request->hasSession()) {
+            $request->session()->save();
+        }
+
         return response()->stream(function () use ($user, $after, $maxWait, $interval): void {
+            if (function_exists('set_time_limit')) {
+                @set_time_limit(0);
+            }
+
             $started = now()->getTimestamp();
 
             // Koneksi pertama: patok kursor ke notifikasi terakhir yang sudah
