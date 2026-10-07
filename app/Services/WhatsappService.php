@@ -36,7 +36,9 @@ class WhatsappService
         $phone = $this->normalizePhone($phone);
 
         try {
-            $response = Http::withToken($this->token)
+            $response = Http::withHeaders([
+                'Authorization' => $this->token,
+            ])
                 ->timeout(10)
                 ->post(self::API_URL, [
                     'target' => $phone,
