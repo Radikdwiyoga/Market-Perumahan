@@ -9,13 +9,17 @@ use App\Models\SellerOrder;
 use App\Models\SellerProfile;
 use App\Models\User;
 use App\Models\UserNotification;
+use App\Services\WhatsappService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class OrderService
 {
-    public function __construct(protected CartService $carts) {}
+    public function __construct(
+        protected CartService $carts,
+        protected WhatsappService $whatsapp,
+    ) {}
 
     /**
      * Buat order dari keranjang milik pembeli, beserta sub-order, item,
@@ -144,6 +148,29 @@ class OrderService
                 "Pesanan baru {$order->order_number} senilai Rp".number_format($sellerOrder->total_amount, 0, ',', '.').' masuk ke toko Anda.',
                 'new_order'
             );
+
+            // Kirim notifikasi WhatsApp ke nomor penjual (dari profil toko atau akun user).
+            $sellerPhone = $sellerOrder->sellerProfile->phone
+                ?: $sellerOrder->sellerProfile->user?->phone;
+
+            if ($sellerPhone) {
+                $paymentLabel = match ($validated['payment_method']) {
+                    'cod' => 'COD (bayar di tempat)',
+                    'qris' => 'QRIS',
+                    'bank_transfer' => 'Transfer Bank',
+                    default => $validated['payment_method'],
+                };
+
+                $this->whatsapp->send(
+                    $sellerPhone,
+                    "🛒 *Pesanan Baru Masuk!*\n\n".
+                    "Nomor: *{$order->order_number}*\n".
+                    "Pembeli: {$buyer->name}\n".
+                    'Total: Rp'.number_format($sellerOrder->total_amount, 0, ',', '.')."\n".
+                    "Pembayaran: {$paymentLabel}\n\n".
+                    'Segera konfirmasi pesanan di dashboard penjual.',
+                );
+            }
         }
 
         return $order;

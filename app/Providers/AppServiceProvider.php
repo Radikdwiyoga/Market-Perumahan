@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\WhatsappService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -14,7 +15,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(WhatsappService::class, fn () => new WhatsappService(
+            token: (string) config('services.fonnte.token', ''),
+            enabled: (bool) config('services.fonnte.enabled', false),
+        ));
+
     }
 
     /**

@@ -56,4 +56,22 @@ return [
         'endpoint' => env('GOOGLE_AI_ENDPOINT', 'https://generativelanguage.googleapis.com/v1beta/models'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Fonnte WhatsApp API Gateway
+    |--------------------------------------------------------------------------
+    |
+    | Dipakai untuk mengirim notifikasi WhatsApp ke penjual saat ada pesanan baru.
+    | Daftar & ambil token gratis di https://fonnte.com
+    |
+    | FONNTE_ENABLED=true   — aktifkan pengiriman WA
+    | FONNTE_TOKEN=xxx      — token dari dashboard Fonnte
+    |
+    */
+
+    'fonnte' => [
+        'enabled' => env('FONNTE_ENABLED', false),
+        'token' => env('FONNTE_TOKEN'),
+    ],
+
 ];
