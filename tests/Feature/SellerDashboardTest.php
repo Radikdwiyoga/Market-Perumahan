@@ -9,6 +9,7 @@ use App\Models\SellerOrder;
 use App\Models\SellerProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class SellerDashboardTest extends TestCase
@@ -57,6 +58,23 @@ class SellerDashboardTest extends TestCase
             ->assertSee('Beras Hampir Habis')
             ->assertSee('Sisa 2')
             ->assertDontSee('Gula Stok Aman');
+    }
+
+    public function test_low_stock_threshold_is_bound_as_a_value_not_a_column(): void
+    {
+        $seller = User::factory()->create(['role' => 'seller']);
+        SellerProfile::create(['user_id' => $seller->id, 'store_name' => 'Warung Warga', 'phone' => $seller->phone, 'address' => 'A1']);
+
+        DB::enableQueryLog();
+        $this->actingAs($seller)->get(route('seller.dashboard'))->assertOk();
+        $sql = implode("\n", array_column(DB::getQueryLog(), 'query'));
+        DB::flushQueryLog();
+
+        // whereColumn() memperlakukan argumen ketiga sebagai nama kolom, sehingga
+        // menghasilkan `"stock" <= "5"` yang ditolak PostgreSQL (SQLite memakainya
+        // sebagai string literal sehingga bug ini lolos di test).
+        $this->assertStringContainsString('"stock" <= ?', $sql);
+        $this->assertStringNotContainsString('"5"', $sql);
     }
 
     public function test_seller_dashboard_excludes_another_stores_orders(): void

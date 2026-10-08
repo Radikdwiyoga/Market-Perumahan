@@ -56,7 +56,7 @@ class SellerDashboardController extends Controller
             'lowStockProducts' => Product::query()
                 ->where('seller_profile_id', $storeId)
                 ->where('status', 'active')
-                ->whereColumn('stock', '<=', 5)
+                ->where('stock', '<=', 5)
                 ->orderBy('stock')
                 ->limit(5)
                 ->get(),
