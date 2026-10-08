@@ -11,6 +11,8 @@ use App\Models\SellerProfile;
 use App\Models\User;
 use App\Models\UserNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class NotificationTest extends TestCase
@@ -34,6 +36,31 @@ class NotificationTest extends TestCase
 
         $this->assertDatabaseHas('user_notifications', ['user_id' => $buyer->id, 'type' => 'order_created']);
         $this->assertDatabaseHas('user_notifications', ['user_id' => $product->sellerProfile->user_id, 'type' => 'new_order']);
+    }
+
+    public function test_seller_whatsapp_alert_links_to_the_orders_page(): void
+    {
+        config()->set('services.fonnte.enabled', true);
+        config()->set('services.fonnte.token', 'test-token');
+        Http::fake();
+
+        $buyer = User::factory()->create();
+        $product = $this->product('Beras', 50000);
+
+        $this->cart($buyer, [$product->id => 1]);
+
+        $this->actingAs($buyer)
+            ->post(route('checkout.store'), [
+                'shipping_methods' => [$product->seller_profile_id => 'seller_delivery'],
+                'shipping_address' => 'Blok A2 No. 15',
+                'payment_method' => 'cod',
+            ])
+            ->assertRedirect();
+
+        Http::assertSent(function (Request $request): bool {
+            return $request->url() === 'https://api.fonnte.com/send'
+                && str_contains($request['message'], route('seller.orders.index'));
+        });
     }
 
     public function test_payment_verification_notifies_buyer(): void

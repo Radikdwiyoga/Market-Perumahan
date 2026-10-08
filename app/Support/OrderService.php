@@ -168,7 +168,9 @@ class OrderService
                     "Pembeli: {$buyer->name}\n".
                     'Total: Rp'.number_format($sellerOrder->total_amount, 0, ',', '.')."\n".
                     "Pembayaran: {$paymentLabel}\n\n".
-                    'Segera konfirmasi pesanan di dashboard penjual.',
+                    'Segera konfirmasi pesanan di dashboard penjual.'."\n\n".
+                    '👇 Buka daftar pesanan masuk:'."\n".
+                    route('seller.orders.index'),
                 );
             }
         }
