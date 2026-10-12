@@ -91,6 +91,10 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::patch('/users/{user}/status', [AdminUserController::class, 'toggleStatus'])->name('users.status');
         Route::patch('/users/{user}/verify-seller', [AdminUserController::class, 'verifySeller'])->name('users.verify-seller');
         Route::patch('/users/{user}/reject-seller', [AdminUserController::class, 'rejectSeller'])->name('users.reject-seller');
+        Route::get('/users/{user}/edit', [AdminUserController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+
         Route::get('/categories', [AdminCategoryController::class, 'index'])->name('categories.index');
         Route::get('/categories/create', [AdminCategoryController::class, 'create'])->name('categories.create');
         Route::post('/categories', [AdminCategoryController::class, 'store'])->name('categories.store');

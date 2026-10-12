@@ -84,6 +84,16 @@
                         <form action="{{ route('admin.users.status', $user) }}" method="POST">@csrf @method('PATCH')
                             <button class="rounded-lg border border-warm-200 px-3 py-2 text-xs font-bold">{{ $user->status === 'active' ? 'Nonaktifkan akun' : 'Aktifkan akun' }}</button>
                         </form>
+                        <a href="{{ route('admin.users.edit', $user) }}" class="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs font-bold text-amber-800 hover:bg-amber-100 transition">
+                            Edit
+                        </a>
+                        <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
+                            onsubmit="return confirm('Hapus akun {{ addslashes($user->name) }}? Tindakan ini tidak bisa dibatalkan.')">
+                            @csrf @method('DELETE')
+                            <button class="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs font-bold text-red-700 hover:bg-red-100 transition">
+                                Hapus
+                            </button>
+                        </form>
                     </div>
                 @endif
             </div>

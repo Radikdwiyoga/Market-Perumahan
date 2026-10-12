@@ -76,7 +76,79 @@ class AdminUserController extends Controller
 
         AuditLogger::log('USER_CREATED', 'User', $user->id, ['role' => $user->role, 'name' => $user->name]);
 
-        return redirect()->route('admin.dashboard')->with('status', 'Akun '.$validated['role'].' berhasil dibuat.');
+        return redirect()->route('admin.users.index')->with('status', 'Akun '.$validated['role'].' berhasil dibuat.');
+    }
+
+    public function edit(User $user): View
+    {
+        $this->ensureAdmin();
+
+        return view('admin.users.edit', ['user' => $user->load('sellerProfile')]);
+    }
+
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $this->ensureAdmin();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:30', 'unique:users,phone,'.$user->id],
+            'email' => ['nullable', 'email', 'max:255', 'unique:users,email,'.$user->id],
+            'address' => ['required', 'string', 'max:255'],
+            'block' => ['required', 'string', 'max:20'],
+            'house_number' => ['required', 'string', 'max:20'],
+            'password' => ['nullable', 'confirmed', 'min:8'],
+            'store_name' => ['nullable', 'string', 'max:255'],
+            'store_description' => ['nullable', 'string', 'max:2000'],
+            'store_phone' => ['nullable', 'string', 'max:30'],
+            'store_address' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        DB::transaction(function () use ($user, $validated): void {
+            $userData = [
+                'name' => $validated['name'],
+                'phone' => $validated['phone'],
+                'email' => $validated['email'] ?? null,
+                'address' => $validated['address'],
+                'block' => $validated['block'],
+                'house_number' => $validated['house_number'],
+            ];
+
+            if (! empty($validated['password'])) {
+                $userData['password'] = $validated['password'];
+            }
+
+            $user->update($userData);
+
+            if ($user->isSeller() && $user->sellerProfile) {
+                $user->sellerProfile->update([
+                    'store_name' => $validated['store_name'] ?? $user->sellerProfile->store_name,
+                    'description' => $validated['store_description'] ?? null,
+                    'phone' => $validated['store_phone'] ?? $user->sellerProfile->phone,
+                    'address' => $validated['store_address'] ?? $user->sellerProfile->address,
+                ]);
+            }
+        });
+
+        AuditLogger::log('USER_UPDATED', 'User', $user->id, ['name' => $user->name, 'role' => $user->role]);
+
+        return redirect()->route('admin.users.index')->with('status', 'Data pengguna berhasil diperbarui.');
+    }
+
+    public function destroy(User $user): RedirectResponse
+    {
+        $this->ensureAdmin();
+        abort_if($user->isAdmin(), 422, 'Akun admin tidak dapat dihapus.');
+        abort_if($user->id === auth()->id(), 422, 'Tidak dapat menghapus akun sendiri.');
+
+        DB::transaction(function () use ($user): void {
+            $user->sellerProfile?->delete();
+            $user->delete();
+        });
+
+        AuditLogger::log('USER_DELETED', 'User', $user->id, ['name' => $user->name, 'role' => $user->role]);
+
+        return redirect()->route('admin.users.index')->with('status', 'Akun pengguna berhasil dihapus.');
     }
 
     public function toggleStatus(User $user): RedirectResponse
