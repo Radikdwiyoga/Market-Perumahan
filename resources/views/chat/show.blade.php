@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Chat dengan {{ $counterpart->name }} - Market UMKM Perumahan</title>
+    <title>Chat dengan {{ $counterpart->name }} - UMKM Mandiri</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-warm-50 text-forest-950">

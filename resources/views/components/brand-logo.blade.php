@@ -15,11 +15,11 @@
 
 <a href="{{ $route }}" {{ $attributes->merge(['class' => 'flex shrink-0 items-center gap-2 sm:gap-2.5']) }}>
     <span class="{{ $tile }} {{ $ring }} flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-warm-white shadow-soft" aria-hidden="true">
-        <img src="{{ asset('images/umkm-logo.png') }}" alt="Market UMKM" class="h-full w-full object-cover" loading="eager" fetchpriority="high" />
+        <img src="{{ asset('images/umkm-logo.png') }}" alt="UMKM Mandiri" class="h-full w-full object-contain p-0.5" loading="eager" fetchpriority="high" />
     </span>
     <span class="min-w-0 {{ $wordmark }}">
-        <strong class="block truncate text-sm leading-none sm:text-base {{ $main }}">Market UMKM</strong>
-        <small class="mt-1 block truncate text-[11px] leading-none sm:text-xs {{ $sub }}">Perumahan ABC</small>
+        <strong class="block truncate text-sm leading-none sm:text-base {{ $main }}">UMKM Mandiri</strong>
+        <small class="mt-1 block truncate text-[11px] leading-none sm:text-xs {{ $sub }}">Perumahan Villa Nusa</small>
     </span>
 </a>
 

@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Daftar - Market UMKM Perumahan</title>
+    <title>Daftar - UMKM Mandiri</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-warm-50 px-4 py-10 text-forest-950 sm:px-6">
@@ -52,7 +52,7 @@
                     <input name="house_number" value="{{ old('house_number') }}" required class="mt-2 w-full rounded-xl border-warm-200 px-4 py-3 text-sm focus:border-forest-600 focus:ring-2 focus:ring-forest-600/20" />
                 </label>
                 <label class="block">
-                    <span class="text-sm font-bold text-sage-700">Password</span>
+                    <span class="text-sm font-bold text-sage-700">Kata Sandi</span>
                     <input type="password" name="password" required class="mt-2 w-full rounded-xl border-warm-200 px-4 py-3 text-sm focus:border-forest-600 focus:ring-2 focus:ring-forest-600/20" />
                 </label>
                 <label class="block">

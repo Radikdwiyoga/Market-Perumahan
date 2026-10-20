@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Masuk - Market UMKM Perumahan</title>
+    <title>Masuk - UMKM Mandiri</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-warm-50 text-forest-950">
@@ -36,7 +36,7 @@
             </div>
             <div class="relative rounded-3xl bg-white/10 p-6 backdrop-blur">
                 <p class="text-sm leading-6 text-forest-100">&ldquo;Pesan kebutuhan tanpa keluar rumah. UMKM tetangga jadi pilihan utama keluarga kami.&rdquo;</p>
-                <p class="mt-3 text-sm font-bold text-white">Warga Blok C, Perumahan ABC</p>
+                <p class="mt-3 text-sm font-bold text-white">Warga Blok C, Perumahan Villa Nusa</p>
             </div>
         </aside>
 
@@ -66,7 +66,7 @@
                             </span>
                         </label>
                         <label class="block">
-                            <span class="text-sm font-bold text-sage-700">Password</span>
+                            <span class="text-sm font-bold text-sage-700">Kata Sandi</span>
                             <span class="mt-2 flex items-center gap-3 rounded-xl border border-warm-200 bg-warm-white px-4 py-3 transition focus-within:border-forest-600 focus-within:ring-2 focus-within:ring-forest-600/20">
                                 <svg class="h-5 w-5 shrink-0 text-sage-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
                                 <input type="password" name="password" required placeholder="********" class="min-w-0 flex-1 border-0 bg-transparent text-sm text-forest-950 outline-none placeholder:text-sage-400 focus:ring-0" />

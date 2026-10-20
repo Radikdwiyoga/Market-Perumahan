@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Edit Produk - Market UMKM Perumahan</title>
+    <title>Edit Produk - UMKM Mandiri</title>
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/product-description-ai.js'])
 </head>
 <body class="min-h-screen bg-warm-50 text-forest-950">
