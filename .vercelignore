@@ -1,0 +1,9 @@
+.git
+.github
+tests
+.env
+.env.example
+README.md
+phpunit.xml
+vite.config.js
+nixpacks.toml
