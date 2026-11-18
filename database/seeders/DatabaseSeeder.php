@@ -73,6 +73,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Sembako segar, beras pulen, minyak goreng dan kebutuhan pokok harian warga Villa Nusa.',
                 'phone' => $seller1->phone,
                 'address' => 'Blok A1 No. 01, Perumahan Villa Nusa',
+                'image' => 'stores/warung-berkah.jpg',
                 'status' => 'open',
                 'verification_status' => 'approved',
                 'verified_at' => now(),
@@ -106,6 +107,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Masakan rumahan lezat, higienis, halal dan selalu hangat untuk santap bersama keluarga.',
                 'phone' => $seller2->phone,
                 'address' => 'Blok C3 No. 08, Perumahan Villa Nusa',
+                'image' => 'stores/dapur-dewi.jpg',
                 'status' => 'open',
                 'verification_status' => 'approved',
                 'verified_at' => now(),
@@ -135,6 +137,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Beras kualitas super wangi dan pulen asli panen petani lokal. Bersih tanpa pemutih.',
                 'price' => 74000,
                 'stock' => 25,
+                'image' => 'products/beras-pandan-wangi.jpg',
                 'status' => 'active',
             ],
         );
@@ -146,6 +149,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Minyak goreng jernih 2x penyaringan, cocok untuk gorengan renyah keluarga.',
                 'price' => 34000,
                 'stock' => 40,
+                'image' => 'products/minyak-goreng.jpg',
                 'status' => 'active',
             ],
         );
@@ -157,6 +161,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Telur ayam segar langsung dari peternakan, selalu baru setiap pagi.',
                 'price' => 28000,
                 'stock' => 30,
+                'image' => 'products/telur-ayam.jpg',
                 'status' => 'active',
             ],
         );
@@ -168,6 +173,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Gula pasir kristal murni untuk teh manis dan kebutuhan masak dapur.',
                 'price' => 17500,
                 'stock' => 50,
+                'image' => 'products/gula-pasir.jpg',
                 'status' => 'active',
             ],
         );
@@ -179,6 +185,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Formula ekstrak jeruk nipis ampuh hilangkan lemak dan bau amis seketika.',
                 'price' => 13500,
                 'stock' => 20,
+                'image' => 'products/sabun-cuci-piring.jpg',
                 'status' => 'active',
             ],
         );
@@ -191,6 +198,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Nasi bakar gurih aroma daun pisang dengan isian ikan cakalang suwir bumbu rica pedas mantap.',
                 'price' => 20000,
                 'stock' => 15,
+                'image' => 'products/nasi-bakar.jpg',
                 'status' => 'active',
             ],
         );
@@ -202,6 +210,7 @@ class DatabaseSeeder extends Seeder
                 'description' => '1 potong paha/dada ayam bumbu lengkuas kriuk renyah lengkap lalapan dan sambal.',
                 'price' => 22000,
                 'stock' => 18,
+                'image' => 'products/ayam-goreng-lengkuas.jpg',
                 'status' => 'active',
             ],
         );
@@ -213,6 +222,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Kulit renyah berlapis dengan isian wortel, bihun, dan telur rebus. Disajikan dengan cabai rawit hijau.',
                 'price' => 15000,
                 'stock' => 20,
+                'image' => 'products/pastel-sayur.jpg',
                 'status' => 'active',
             ],
         );
@@ -224,6 +234,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Cendol kenyal pandan asli dengan santan gurih, potongan nangka wangi dan gula aren murni.',
                 'price' => 12000,
                 'stock' => 25,
+                'image' => 'products/es-cendol.jpg',
                 'status' => 'active',
             ],
         );
@@ -235,6 +246,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Teh segar dengan perasan lemon asli dan taburan biji selasih dingin menyegarkan.',
                 'price' => 8000,
                 'stock' => 30,
+                'image' => 'products/es-lemon-tea.jpg',
                 'status' => 'active',
             ],
         );
