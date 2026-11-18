@@ -35,6 +35,8 @@
   ],
   "env": {
     "APP_ENV": "production",
+    "DB_CONNECTION": "sqlite",
+    "DB_DATABASE": "/tmp/database/database.sqlite",
     "APP_CONFIG_CACHE": "/tmp/bootstrap/cache/config.php",
     "APP_EVENTS_CACHE": "/tmp/bootstrap/cache/events.php",
     "APP_PACKAGES_CACHE": "/tmp/bootstrap/cache/packages.php",

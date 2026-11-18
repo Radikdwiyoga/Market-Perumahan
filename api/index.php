@@ -13,11 +13,24 @@ $tmpDirs = [
     '/tmp/storage/logs',
     '/tmp/storage/app/public',
     '/tmp/bootstrap/cache',
+    '/tmp/database',
 ];
 
 foreach ($tmpDirs as $dir) {
     if (!is_dir($dir)) {
         @mkdir($dir, 0755, true);
+    }
+}
+
+// Ensure SQLite database exists in writable /tmp directory
+$tmpSqlite = '/tmp/database/database.sqlite';
+$sourceSqlite = __DIR__ . '/../database/database.sqlite';
+
+if (!file_exists($tmpSqlite)) {
+    if (file_exists($sourceSqlite)) {
+        @copy($sourceSqlite, $tmpSqlite);
+    } else {
+        @touch($tmpSqlite);
     }
 }
 
